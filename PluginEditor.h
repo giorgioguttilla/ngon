@@ -10,11 +10,14 @@
 
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
+#include "VolumeSlider.h"
 
 //==============================================================================
 /**
 */
-class PrismizerAudioProcessorEditor  : public juce::AudioProcessorEditor, private juce::Slider::Listener
+class PrismizerAudioProcessorEditor  :
+    public juce::AudioProcessorEditor,
+    private juce::Slider::Listener
 {
 public:
     PrismizerAudioProcessorEditor (PrismizerAudioProcessor&);
@@ -31,7 +34,8 @@ private:
     // access the processor object that created it.
     PrismizerAudioProcessor& audioProcessor;
     
-    juce::Slider midiVolume;
+    VolumeSlider rawVolume;
+    VolumeSlider wetVolume;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PrismizerAudioProcessorEditor)
 };

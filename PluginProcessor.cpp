@@ -195,6 +195,7 @@ void PrismizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     //SYNTH RENDERING --- copies buffer to processBlock first, then does rendering on processBlock and recombine with buffer after based on wet/dry amount
     processBuffer.clear();
     
+    //This method triggers all voice process methods, which accumulate their output to the process buffer supplied in prepareToPlay
     synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
 
     buffer.applyGain(rawGain);
@@ -217,9 +218,8 @@ void PrismizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
 //
 //    }
     
-    //buffer.applyGain(1/synth.getNumVoices());
     
-    DBG("-------");
+//    DBG("-------");
     
 }
 
@@ -258,4 +258,26 @@ juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 
 int PrismizerAudioProcessor::getMidiNoteFromHz (float hz){
     return log(hz/440.0)/log(2) * 12 + 69;
+}
+
+
+
+void PrismizerAudioProcessor::setModGain(float g)
+{
+    modGain = g;
+}
+
+float PrismizerAudioProcessor::getModGain()
+{
+    return modGain;
+}
+
+void PrismizerAudioProcessor::setRawGain(float g)
+{
+    rawGain = g;
+}
+
+float PrismizerAudioProcessor::getRawGain()
+{
+    return rawGain;
 }

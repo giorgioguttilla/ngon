@@ -86,7 +86,7 @@ void PrismVoice::renderNextBlock (juce::AudioBuffer<float> &outputBuffer, int st
     processBufferPtr->addFrom(0, startSample, tempBuf.getReadPointer(0), numSamples);
     processBufferPtr->addFrom(1, startSample, tempBuf.getReadPointer(0), numSamples);
     
-    DBG(" " << numSamples << " " << processBufferPtr->getMagnitude(0, numSamples));
+//    DBG(" " << numSamples << " " << processBufferPtr->getMagnitude(0, numSamples));
 }
 
 //void PrismVoice::renderNextBlock (juce::AudioBuffer<float> &outputBuffer, int startSample, int numSamples)
