@@ -8,7 +8,10 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
-#include "smbPitchShift.cpp"
+//#include "smbPitchShift.cpp"
+
+#include "PrismVoice.h"
+#include "PrismSound.h"
 
 
 
@@ -25,12 +28,15 @@ PrismizerAudioProcessor::PrismizerAudioProcessor()
                        )
 #endif
 {
-    
+    synth.addSound(new PrismSound());
+    for (int i = 0; i < 2; i++){
+        synth.addVoice(new PrismVoice());
+    }
 }
 
 PrismizerAudioProcessor::~PrismizerAudioProcessor()
 {
-    
+    if (wm != nullptr) delete wm;
 }
 
 //==============================================================================
@@ -103,9 +109,22 @@ void PrismizerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
     
     sr = sampleRate;
     
-    //create new window manager, 1024 is placeholder for winsize variable
-    wm = new WindowManager(1024, samplesPerBlock);
+    //create new window manager
+    wm = new WindowManager(winsize, samplesPerBlock);
     wm->clearWindow();
+    
+    //instantiate processbuffer properly, will be sent to each voice in the preparetoplay method 
+    processBuffer.setSize(2, samplesPerBlock);
+    
+    synth.setCurrentPlaybackSampleRate(sampleRate);
+    
+    for (int i = 0; i < synth.getNumVoices(); i++)
+    {
+        if(auto voice = dynamic_cast<PrismVoice*>(synth.getVoice(i)))
+        {
+            voice->prepareToPlay(sampleRate, samplesPerBlock, getTotalNumOutputChannels(), &processBuffer);
+        }
+    }
     
 }
 
@@ -145,31 +164,62 @@ void PrismizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
 {
     //appends in buffer to list of previous buffers, then performs analysis once window is full
     
-    for (int channel = 0; channel < 1; ++channel) {
-        float* inData = (float*)buffer.getReadPointer (channel);
-        float* outData = buffer.getWritePointer(channel);
-        
-        wm->append(inData);
-        
-        if (wm->isFull()){
-            Yin yin = Yin(sr, wm->getWindowSize());
-            
-            pitchEst = yin.getPitch(wm->getWindow());
-            DBG(pitchEst);
-            
-            shift = pitchEst == -1 ? 1 : juce::MidiMessage::getMidiNoteInHertz(69) / pitchEst;
-            DBG(shift);
-        }
-
-        
-        //perform pitch shift on buffer
-        smbPitchShift(shift, buffer.getNumSamples(), fftsize, oversampling, sr, inData, outData);
-           
-    }
+    float* inData = (float*)buffer.getReadPointer (0);
     
-////        for (int sample = 0; sample < buffer.getNumSamples(); sample++) {
-////            channelData[sample] *= 1;
-////        }
+    wm->append(inData);
+    
+    if (wm->isFull()){
+        
+        Yin yin = Yin(sr, wm->getWindowSize()); //could probably be more efficient, might lead to mem leak
+        
+        pitchEst = yin.getPitch(wm->getWindow());
+        
+        //Updates raw pitch target in each synth voice
+        
+        for (int i = 0; i < synth.getNumVoices(); ++i){
+            
+            if (auto voice = dynamic_cast<PrismVoice*>(synth.getVoice(i))){
+                
+                voice->setInPitch(pitchEst);
+                
+            }
+        
+        }
+        
+    }
+
+    
+    
+    
+    
+    //SYNTH RENDERING --- copies buffer to processBlock first, then does rendering on processBlock and recombine with buffer after based on wet/dry amount
+    processBuffer.clear();
+    
+    synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
+
+    buffer.applyGain(rawGain);
+    processBuffer.applyGain(modGain);
+    
+    buffer.addFrom(0, 0, (float*)processBuffer.getReadPointer(0), processBuffer.getNumSamples());
+    buffer.addFrom(1, 0, (float*)processBuffer.getReadPointer(1), processBuffer.getNumSamples());
+
+    
+    
+//    buffer.clear();
+//    
+//    for (int i = 0; i < synth.getNumVoices(); ++i){
+//
+//        if (auto voice = dynamic_cast<PrismVoice*>(synth.getVoice(i))){
+//            
+//            buffer.addFrom(0, 0, voice->getWriteBuffer()->getReadPointer(0), buffer.getNumSamples());
+//
+//        }
+//
+//    }
+    
+    //buffer.applyGain(1/synth.getNumVoices());
+    
+    DBG("-------");
     
 }
 

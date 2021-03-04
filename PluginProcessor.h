@@ -9,9 +9,9 @@
 #pragma once
 
 #include <JuceHeader.h>
-#include "./Yin/Yin.h"
-#include "PitchYIN.h"
+#include "Yin.h"
 #include "WindowManager.h"
+#include "PrismSynth.h"
 
 //==============================================================================
 /**
@@ -20,19 +20,6 @@ class PrismizerAudioProcessor  : public juce::AudioProcessor
 {
 public:
     float noteOnVel;
-    
-    //Pitch Shift/Detection Values==================================================
-    
-    float shift = 2;
-    double sr = 0;
-    double oversampling = 32;
-    double fftsize = 1024;
-    
-    float pitchEst = 0;
-    
-//    PitchYIN* pitchYIN;
-//    Yin *yin;
-    WindowManager *wm;
     
     int getMidiNoteFromHz (float hz);
     
@@ -74,7 +61,23 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
 private:
+    
+    //Creates window for pitch detection
+    WindowManager *wm;
+    float winsize = 1024;
+    
+    //Synth class
+    juce::Synthesiser synth;
+    
+    //processBuffer will hold edited signal from synth, used to separate raw and modded signal
+    juce::AudioBuffer<float> processBuffer;
+    
+    double sr = 0;
+    float pitchEst = 0;
+    
+    float modGain = 1;
+    float rawGain = 1;
+    
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PrismizerAudioProcessor)
-    
 };

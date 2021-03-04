@@ -28,7 +28,7 @@ WindowManager::WindowManager(int wSize, int bSize){
 }
 
 WindowManager::~WindowManager(){
-//    delete window;
+    delete window;
 }
 
 void WindowManager::test(){
