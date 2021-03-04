@@ -17,7 +17,8 @@
 */
 class PrismizerAudioProcessorEditor  :
     public juce::AudioProcessorEditor,
-    private juce::Slider::Listener
+    private juce::Slider::Listener,
+    public juce::Button::Listener
 {
 public:
     PrismizerAudioProcessorEditor (PrismizerAudioProcessor&);
@@ -29,10 +30,21 @@ public:
 
 private:
     void sliderValueChanged(juce::Slider* slider) override;
+    void buttonClicked(juce::Button *button) override;
     
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     PrismizerAudioProcessor& audioProcessor;
+    
+    //IN
+    
+    juce::ToggleButton autotuneToggle;
+    
+    //PROCESS
+    
+    
+    
+    //OUT
     
     VolumeSlider rawVolume;
     VolumeSlider wetVolume;
