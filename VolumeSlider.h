@@ -12,15 +12,19 @@
 
 #include <JuceHeader.h>
 
-class VolumeSlider : juce::Slider {
+class VolumeSlider : public juce::Component {
     
 public:
     VolumeSlider();
-    VolumeSlider(const std::string text);
     ~VolumeSlider();
     
     juce::Slider slider;
     juce::Label label;
+    
+    void setText(const std::string text);
+    
+    void resized() override;
 private:
-    void init(const std::string text);
+    
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (VolumeSlider)
 };

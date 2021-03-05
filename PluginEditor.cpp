@@ -15,7 +15,7 @@ PrismizerAudioProcessorEditor::PrismizerAudioProcessorEditor (PrismizerAudioProc
 {
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
-    setSize (400, 300);
+    setSize (600, 400);
     
     
     
@@ -23,21 +23,41 @@ PrismizerAudioProcessorEditor::PrismizerAudioProcessorEditor (PrismizerAudioProc
     
     autotuneToggle.setButtonText("Autotune");
     
+    fc1.setText("Follower 1");
+    fc2.setText("Follower 2");
+    smoothing.setText("smoothing");
     
-    rawVolume.label.setText("Dry", juce::dontSendNotification);
-    wetVolume.label.setText("Wet", juce::dontSendNotification);
+    rawVolume.setText("Dry");
+    wetVolume.setText("Wet");
     
     //listener/visibility setup------------------------------
     
     autotuneToggle.addListener(this);
     
+    fc1.toggle.addListener(this);
+    fc1.pitchSlider.addListener(this);
+    fc2.toggle.addListener(this);
+    fc2.pitchSlider.addListener(this);
+    
+    ADSR.attack.slider.addListener(this);
+    ADSR.decay.slider.addListener(this);
+    ADSR.sustain.slider.addListener(this);
+    ADSR.release.slider.addListener(this);
+    
+    smoothing.slider.addListener(this);
+    
     rawVolume.slider.addListener(this);
     wetVolume.slider.addListener(this);
     
-    // this function adds the slider to the editor
+    //-------------------------------------------------------
+    
     addAndMakeVisible(&autotuneToggle);
-    addAndMakeVisible(&rawVolume.slider);
-    addAndMakeVisible(&wetVolume.slider);
+    addAndMakeVisible(&fc1);
+    addAndMakeVisible(&fc2);
+    addAndMakeVisible(&ADSR);
+    addAndMakeVisible(&smoothing);
+    addAndMakeVisible(&rawVolume);
+    addAndMakeVisible(&wetVolume);
     
 }
 
@@ -76,6 +96,9 @@ void PrismizerAudioProcessorEditor::resized()
     // subcomponents in your editor..
     // sets the position and size of the slider with arguments (x, y, width, height)
     autotuneToggle.setBounds(200, 30, 100, 40);
-    rawVolume.slider.setBounds (40, 30, 80, getHeight() - 60);
-    wetVolume.slider.setBounds (120, 30, 80, getHeight() - 60);
+    fc1.setTopLeftPosition(rawVolume.getWidth(), rawVolume.getHeight());
+    fc2.setTopLeftPosition(fc1.getX(), fc1.getHeight());
+    ADSR.setTopLeftPosition(400, 0);
+    smoothing.setTopLeftPosition(400, 200);
+    wetVolume.setTopLeftPosition(rawVolume.getX() + rawVolume.getWidth(), 0);
 }

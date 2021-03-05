@@ -11,6 +11,8 @@
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
 #include "VolumeSlider.h"
+#include "FollowerControl.h"
+#include "AdsrControls.h"
 
 //==============================================================================
 /**
@@ -40,9 +42,13 @@ private:
     
     juce::ToggleButton autotuneToggle;
     
+    FollowerControl fc1;
+    FollowerControl fc2;
+    
     //PROCESS
     
-    
+    AdsrControls ADSR;
+    VolumeSlider smoothing;
     
     //OUT
     

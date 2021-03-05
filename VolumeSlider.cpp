@@ -11,22 +11,14 @@
 #include "VolumeSlider.h"
 
 VolumeSlider::VolumeSlider(){
-    init("Volume");
-}
-
-VolumeSlider::VolumeSlider(const std::string text){
-    init(text);
-}
-
-VolumeSlider::~VolumeSlider(){
     
-}
+    addAndMakeVisible(slider);
+    addAndMakeVisible(label);
+    
+    setSize(100, 160);
 
-void VolumeSlider::init(const std::string text)
-{
-//    slider.setSliderStyle(juce::Slider::LinearVertical);
     slider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
-    slider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 200, 30);
+    slider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 100, 30);
     slider.setTextBoxIsEditable(true);
 
     slider.setNormalisableRange(juce::NormalisableRange<double>(0.0, 1.0));
@@ -39,8 +31,26 @@ void VolumeSlider::init(const std::string text)
     
     
     
-    label.setText(text, juce::dontSendNotification);
+    label.setText("Volume", juce::dontSendNotification);
     label.attachToComponent(&slider, false);
     label.setColour(juce::Label::textColourId, juce::Colours::skyblue);
     label.setJustificationType (juce::Justification::centred);
+    
 }
+
+VolumeSlider::~VolumeSlider(){
+    
+}
+
+void VolumeSlider::resized()
+{
+    label.setBounds(0, 0, getWidth(), 30);
+    slider.setBounds(0, 30, getWidth(), getHeight() - 30);
+}
+
+void VolumeSlider::setText(const std::string text)
+{
+    label.setText(text, juce::dontSendNotification);
+}
+
+
