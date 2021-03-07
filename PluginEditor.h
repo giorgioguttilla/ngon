@@ -13,6 +13,7 @@
 #include "VolumeSlider.h"
 #include "FollowerControl.h"
 #include "AdsrControls.h"
+#include "TunerKeyboard.h"
 
 //==============================================================================
 /**
@@ -49,6 +50,7 @@ private:
     
     AdsrControls ADSR;
     VolumeSlider smoothing;
+    TunerKeyboard tKey;
     
     //OUT
     

@@ -44,6 +44,8 @@ PrismizerAudioProcessorEditor::PrismizerAudioProcessorEditor (PrismizerAudioProc
     ADSR.sustain.slider.addListener(this);
     ADSR.release.slider.addListener(this);
     
+    //TODO: add listener for tunerkeybaord
+    
     smoothing.slider.addListener(this);
     
     rawVolume.slider.addListener(this);
@@ -55,6 +57,7 @@ PrismizerAudioProcessorEditor::PrismizerAudioProcessorEditor (PrismizerAudioProc
     addAndMakeVisible(&fc1);
     addAndMakeVisible(&fc2);
     addAndMakeVisible(&ADSR);
+    addAndMakeVisible(&tKey);
     addAndMakeVisible(&smoothing);
     addAndMakeVisible(&rawVolume);
     addAndMakeVisible(&wetVolume);
@@ -87,7 +90,6 @@ void PrismizerAudioProcessorEditor::paint (juce::Graphics& g)
 
     g.setColour (juce::Colours::white);
     g.setFont (15.0f);
-    g.drawFittedText ("Prismizer", getLocalBounds(), juce::Justification::centred, 1);
 }
 
 void PrismizerAudioProcessorEditor::resized()
@@ -99,6 +101,7 @@ void PrismizerAudioProcessorEditor::resized()
     fc1.setTopLeftPosition(rawVolume.getWidth(), rawVolume.getHeight());
     fc2.setTopLeftPosition(fc1.getX(), fc1.getHeight());
     ADSR.setTopLeftPosition(400, 0);
+    tKey.setTopLeftPosition(200, 300);
     smoothing.setTopLeftPosition(400, 200);
     wetVolume.setTopLeftPosition(rawVolume.getX() + rawVolume.getWidth(), 0);
 }
