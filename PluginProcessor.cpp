@@ -23,7 +23,20 @@ PrismizerAudioProcessor::PrismizerAudioProcessor()
                       #endif
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
-                       )
+                       ),
+params(*this, nullptr, "PARAMETERS", {
+    
+    std::make_unique<juce::AudioParameterFloat>("attack", "Attack", 0.0f, 10.0f, 0.0f),
+    std::make_unique<juce::AudioParameterFloat>("decay", "Decay", 0.0f, 5.0f, 0.0f),
+    std::make_unique<juce::AudioParameterFloat>("sustain", "Sustain", 0.0f, 20.0f, 1.0f),
+    std::make_unique<juce::AudioParameterFloat>("release", "Release", 0.0f, 20.0f, 0.0f),
+    
+    std::make_unique<juce::AudioParameterFloat>("rawVolume", "RawVolume", 0.0f, 1.0f, 1.0f),
+    std::make_unique<juce::AudioParameterFloat>("wetVolume", "WetVolume", 0.0f, 1.0f, 1.0f)
+    
+})
+
+// ^^^ add parameters here
 #endif
 {
     synth.addSound(new PrismSound());
@@ -193,11 +206,28 @@ void PrismizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     //SYNTH RENDERING --- copies buffer to processBlock first, then does rendering on processBlock and recombine with buffer after based on wet/dry amount
     processBuffer.clear();
     
+    //update voices' ADSR envelopes
+    for (int i = 0; i < synth.getNumVoices(); ++i){
+        if (auto voice = dynamic_cast<PrismVoice*>(synth.getVoice(i))){
+            juce::ADSR::Parameters adsrParams = juce::ADSR::Parameters();
+            
+            adsrParams.attack = *params.getRawParameterValue("attack");
+            adsrParams.decay = *params.getRawParameterValue("decay");
+            adsrParams.sustain = *params.getRawParameterValue("sustain");
+            adsrParams.release = *params.getRawParameterValue("release");
+            
+            voice->adsr.setParameters(adsrParams);
+        }
+    }
+    
     //This method triggers all voice process methods, which accumulate their output to the process buffer supplied in prepareToPlay
     synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
 
-    buffer.applyGain(rawGain);
-    processBuffer.applyGain(modGain);
+    //Gain from the sliders is applied to each respective channel
+    buffer.applyGain(*params.getRawParameterValue("rawVolume"));
+    processBuffer.applyGain(*params.getRawParameterValue("wetVolume"));
+    
+//    DBG(*params.getRawParameterValue("rawVolume"));
     
     buffer.addFrom(0, 0, (float*)processBuffer.getReadPointer(0), processBuffer.getNumSamples());
     buffer.addFrom(1, 0, (float*)processBuffer.getReadPointer(1), processBuffer.getNumSamples());
@@ -260,22 +290,4 @@ int PrismizerAudioProcessor::getMidiNoteFromHz (float hz){
 
 
 
-void PrismizerAudioProcessor::setModGain(float g)
-{
-    modGain = g;
-}
 
-float PrismizerAudioProcessor::getModGain()
-{
-    return modGain;
-}
-
-void PrismizerAudioProcessor::setRawGain(float g)
-{
-    rawGain = g;
-}
-
-float PrismizerAudioProcessor::getRawGain()
-{
-    return rawGain;
-}

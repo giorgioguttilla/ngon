@@ -58,4 +58,17 @@ private:
     VolumeSlider wetVolume;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PrismizerAudioProcessorEditor)
+    
+public:
+    
+    //slider attachments for updating params
+    
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> attackValue;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> decayValue;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> sustainValue;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> releaseValue;
+
+    
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> rawVolumeValue;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> wetVolumeValue;
 };

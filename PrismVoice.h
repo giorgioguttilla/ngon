@@ -27,13 +27,14 @@ public:
     void prepareToPlay (double sampleRate, int samplesPerBlock, int outputChannels, juce::AudioBuffer<float> *pbp);
     void renderNextBlock (juce::AudioBuffer<float> &outputBuffer, int startSample, int numSamples) override;
     juce::AudioBuffer<float> *getWriteBuffer();
-//    juce::AudioBuffer<float> getProcessBuffer();
     void setProcessBufferPtr(juce::AudioBuffer<float> *pbp);
     void setInPitch (float pitch);
     
-private:
     juce::ADSR adsr;
     juce::ADSR::Parameters adsrParams;
+    
+private:
+    
     
     juce::AudioBuffer<float> tempBuf;
     juce::AudioBuffer<float> *processBufferPtr;

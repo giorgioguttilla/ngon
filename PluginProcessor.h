@@ -62,11 +62,7 @@ public:
     
     //==============================================================================
     
-    void setModGain(float g);
-    float getModGain();
-    
-    void setRawGain(float g);
-    float getRawGain();
+    juce::AudioProcessorValueTreeState params;
 
 private:
     
@@ -83,8 +79,7 @@ private:
     double sr = 0;
     float pitchEst = 0;
     
-    float modGain = 1;
-    float rawGain = 1;
+
     
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PrismizerAudioProcessor)

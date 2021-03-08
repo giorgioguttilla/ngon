@@ -29,12 +29,14 @@ VolumeSlider::VolumeSlider(){
         return juce::String(value, 2);
     };
     
-    
+    slider.updateText();
     
     label.setText("Volume", juce::dontSendNotification);
     label.attachToComponent(&slider, false);
     label.setColour(juce::Label::textColourId, juce::Colours::skyblue);
     label.setJustificationType (juce::Justification::centred);
+    
+    
     
 }
 
