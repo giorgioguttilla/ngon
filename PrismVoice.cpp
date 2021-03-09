@@ -69,11 +69,8 @@ void PrismVoice::renderNextBlock (juce::AudioBuffer<float> &outputBuffer, int st
 {
     
     //gets ratio between pitch of raw and pitch of played note
-    float shift = inPitch == -1 ? 1 : outPitch / inPitch;
-    if (shift > 2) shift = 2.0;
-    if (shift < 0.5) shift = 0.5;
-    
 
+    float shift = PitchShift::getshiftRatio(inPitch, outPitch);
     
     //copies in buffer to temp, does processing, and adds back to out buffer
     

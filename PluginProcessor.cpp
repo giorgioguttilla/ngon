@@ -137,6 +137,9 @@ void PrismizerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
         }
     }
     
+    //need to give autotune shift proper sample rate
+    autotuneShift.setSampleRate(sampleRate);
+    
 }
 
 void PrismizerAudioProcessor::releaseResources()
@@ -174,7 +177,6 @@ bool PrismizerAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts
 void PrismizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     //appends in buffer to list of previous buffers, then performs analysis once window is full
-    
     float* inData = (float*)buffer.getReadPointer (0);
     
     wm->append(inData);
@@ -186,7 +188,6 @@ void PrismizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
         pitchEst = yin.getPitch(wm->getWindow());
         
         //Updates raw pitch target in each synth voice
-        
         for (int i = 0; i < synth.getNumVoices(); ++i){
             
             if (auto voice = dynamic_cast<PrismVoice*>(synth.getVoice(i))){
@@ -198,12 +199,6 @@ void PrismizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
         }
         
     }
-    
-    
-    //gets frequency for autotuning
-    std::vector<int> notesTk = dynamic_cast<PrismizerAudioProcessorEditor*>(getActiveEditor())->tKey.getValidNotes();
-    DBG(roundFreqToNearestNote(447, notesTk));
-    
     
     
     
@@ -227,6 +222,23 @@ void PrismizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     
     //This method triggers all voice process methods, which accumulate their output to the process buffer supplied in prepareToPlay
     synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
+    
+    
+    
+    //AUTOTUNE AND FOLLOWERS --- determines from the list of allowed keys the closest note to snap to, and if autotune is enabled shift raw signal accordingly. Autotune is applied here to prevent distortion in the synth signal.
+    
+    //gets target frequency for autotune pass
+    std::vector<int> notesTk = dynamic_cast<PrismizerAudioProcessorEditor*>(getActiveEditor())->tKey.getValidNotes();
+    float tFreq = roundFreqToNearestNote(pitchEst, notesTk);
+    
+    DBG(tFreq);
+    
+    if (true)   //change this to if autotune toggle is on
+    {
+        autotuneShift.smbPitchShift(PitchShift::getshiftRatio(pitchEst, tFreq), buffer.getNumSamples(), 1024, 32, (float*)buffer.getReadPointer(0), buffer.getWritePointer(0));
+    }
+    
+    
 
     //Gain from the sliders is applied to each respective channel
     buffer.applyGain(*params.getRawParameterValue("rawVolume"));

@@ -249,3 +249,13 @@ void PitchShift::smbPitchShift(float pitchShift, long numSampsToProcess, long ff
         }
     }
 }
+
+
+
+float PitchShift::getshiftRatio(float inFreq, float tFreq)
+{
+    float shift = inFreq == -1 ? 1 : tFreq / inFreq;
+    if (shift > 2) shift = 2.0;
+    if (shift < 0.5) shift = 0.5;
+    return shift;
+}
