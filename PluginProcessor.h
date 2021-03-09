@@ -79,7 +79,8 @@ private:
     double sr = 0;
     float pitchEst = 0;
     
-
+    //rounds supplied freq to closest midi note from provided vector. Vector takes the form of: 0 = c, 1 = c#...
+    static float roundFreqToNearestNote(float inFreq, std::vector<int> useNotes);
     
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PrismizerAudioProcessor)

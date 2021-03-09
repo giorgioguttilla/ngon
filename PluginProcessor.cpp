@@ -198,7 +198,12 @@ void PrismizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
         }
         
     }
-
+    
+    
+    //gets frequency for autotuning
+    std::vector<int> notesTk = dynamic_cast<PrismizerAudioProcessorEditor*>(getActiveEditor())->tKey.getValidNotes();
+    DBG(roundFreqToNearestNote(447, notesTk));
+    
     
     
     
@@ -227,27 +232,10 @@ void PrismizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     buffer.applyGain(*params.getRawParameterValue("rawVolume"));
     processBuffer.applyGain(*params.getRawParameterValue("wetVolume"));
     
-//    DBG(*params.getRawParameterValue("rawVolume"));
+
     
     buffer.addFrom(0, 0, (float*)processBuffer.getReadPointer(0), processBuffer.getNumSamples());
     buffer.addFrom(1, 0, (float*)processBuffer.getReadPointer(1), processBuffer.getNumSamples());
-
-    
-    
-//    buffer.clear();
-//    
-//    for (int i = 0; i < synth.getNumVoices(); ++i){
-//
-//        if (auto voice = dynamic_cast<PrismVoice*>(synth.getVoice(i))){
-//            
-//            buffer.addFrom(0, 0, voice->getWriteBuffer()->getReadPointer(0), buffer.getNumSamples());
-//
-//        }
-//
-//    }
-    
-    
-//    DBG("-------");
     
 }
 
@@ -284,10 +272,30 @@ juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 }
 
 
-int PrismizerAudioProcessor::getMidiNoteFromHz (float hz){
+int PrismizerAudioProcessor::getMidiNoteFromHz (float hz)
+{
     return log(hz/440.0)/log(2) * 12 + 69;
 }
 
-
-
+//rounds supplied freq to closest midi note from provided vector. Vector takes the form of: 0 = c, 1 = c#...
+float PrismizerAudioProcessor::roundFreqToNearestNote(float inFreq, std::vector<int> useNotes)
+{
+    float bestFreq = 0.0;
+    float bestDist = 10000.0;
+    
+    for(int note : useNotes)
+    {
+        for (int i = 0; i < 8; i++) {
+            float curFreq = juce::MidiMessage::getMidiNoteInHertz(note + (12 * i));
+            float curDist = abs(inFreq - curFreq);
+            if(curDist < bestDist)
+            {
+                bestFreq = curFreq;
+                bestDist = curDist;
+            }
+        }
+    }
+    
+    return bestFreq;
+}
 

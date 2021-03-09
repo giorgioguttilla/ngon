@@ -50,8 +50,9 @@ private:
     
     AdsrControls ADSR;
     VolumeSlider smoothing;
+public:
     TunerKeyboard tKey;
-    
+private:
     //OUT
     
     VolumeSlider rawVolume;

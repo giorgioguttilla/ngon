@@ -28,6 +28,7 @@ public:
     TaggedKey *blackKeys [5];
     std::vector<TaggedKey *> keys;
     
+    
     TunerKeyboard()
     {
         
@@ -121,6 +122,17 @@ public:
     std::vector<TaggedKey *> getKeysDown()
     {
         return keysDown;
+    }
+    
+    std::vector<int> getValidNotes()
+    {
+        std::vector<int> notes {0,1,2,3,4,5,6,7,8,9,10,11};
+        
+        for (auto key : keysDown) {
+            notes.erase(std::remove(notes.begin(), notes.end(), key->getNote()));
+        }
+        
+        return notes;
     }
 
 private:
