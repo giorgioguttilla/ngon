@@ -134,6 +134,27 @@ public:
         
         return notes;
     }
+    
+    //sets target note for gui, if n = -1 then unset all
+    void setTarget(int n)
+    {
+        for(auto key : keys)
+        {
+            key->setIsTarget(false);
+        }
+        
+        if(n == -1)
+        {
+            repaint();
+            return;
+        }
+        
+        if(n > 11 || n < 0) return;
+        
+        keys.at(n)->setIsTarget(true);
+        
+        repaint();
+    }
 
 private:
     
@@ -163,6 +184,9 @@ private:
         {
             return a->getNote() < b->getNote();
         });
+        
+        //change color of component
+        k->repaint();
         
     }
     

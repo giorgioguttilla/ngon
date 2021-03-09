@@ -39,16 +39,22 @@ public:
 
     void paint (juce::Graphics& g) override
     {
-        /* This demo code just fills the component's background and
-           draws some placeholder text to get you started.
-
-           You should replace everything in this method with your own
-           drawing code..
-        */
-        // clear the background
-
-        g.setColour (juce::Colours::grey);
-        g.drawRect (getLocalBounds(), 1);   // draw an outline around the component
+        
+        
+        if(getToggleState())
+        {
+            isMouseOver() ? g.fillAll(juce::Colours::darkcyan) : g.fillAll(juce::Colours::darkgrey);
+            isTarget ? g.setColour (juce::Colours::darkred) : g.setColour(juce::Colours::black);
+        }
+        else
+        {
+            isMouseOver() ? g.fillAll(juce::Colours::lightcyan) : g.fillAll(juce::Colours::white);
+            isTarget ? g.setColour (juce::Colours::indianred) : g.setColour(juce::Colours::black);
+        }
+        
+        g.drawRect (getLocalBounds(), 2);   // draw an outline around the component
+        
+        
 
     }
 
@@ -59,8 +65,19 @@ public:
 
     }
     
+    bool getIsTarget()
+    {
+        return isTarget;
+    }
+    
+    void setIsTarget(bool t)
+    {
+        isTarget = t;
+    }
+    
 protected:
     int note;
+    bool isTarget = false;
 
 private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TaggedKey)

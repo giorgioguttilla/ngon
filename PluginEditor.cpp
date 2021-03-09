@@ -13,7 +13,14 @@
 PrismizerAudioProcessorEditor::PrismizerAudioProcessorEditor (PrismizerAudioProcessor& p)
     : AudioProcessorEditor (&p), audioProcessor (p)
 {
+    //timer will listen for processor pitch detection and adjust tunerkeyboard
+    startTimer(100);
+    
     //ValueTree pointer initializations
+    
+    autotuneValue = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(audioProcessor.params, "autotune", autotuneToggle);
+    
+    
     
     attackValue = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.params, "attack", ADSR.attack.slider);
     
@@ -98,6 +105,14 @@ void PrismizerAudioProcessorEditor::buttonClicked(juce::Button *button)
 PrismizerAudioProcessorEditor::~PrismizerAudioProcessorEditor()
 {
     
+}
+
+//sets tunkerkeyboard target value. unset if no autotune active or no note detected
+void PrismizerAudioProcessorEditor::timerCallback()
+{
+    int noteMod = dynamic_cast<PrismizerAudioProcessor &>(processor).getTargetFreqAsNote() % 12;
+//    DBG(noteMod);
+    tKey.setTarget(autotuneToggle.getToggleState() ? noteMod : -1);
 }
 
 void PrismizerAudioProcessorEditor::paint (juce::Graphics& g)

@@ -26,6 +26,8 @@ PrismizerAudioProcessor::PrismizerAudioProcessor()
                        ),
 params(*this, nullptr, "PARAMETERS", {
     
+    std::make_unique<juce::AudioParameterBool>("autotune", "Autotune", false),
+    
     std::make_unique<juce::AudioParameterFloat>("attack", "Attack", 0.0f, 10.0f, 0.0f),
     std::make_unique<juce::AudioParameterFloat>("decay", "Decay", 0.0f, 5.0f, 0.0f),
     std::make_unique<juce::AudioParameterFloat>("sustain", "Sustain", 0.0f, 20.0f, 1.0f),
@@ -225,18 +227,28 @@ void PrismizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     
     
     
-    //AUTOTUNE AND FOLLOWERS --- determines from the list of allowed keys the closest note to snap to, and if autotune is enabled shift raw signal accordingly. Autotune is applied here to prevent distortion in the synth signal.
+    //AUTOTUNE AND FOLLOWERS --- determines from the list of allowed keys the closest note to snap to, and if autotune is enabled shift raw signal accordingly. Autotune is applied at this point to prevent distortion in the synth signal.
     
     //gets target frequency for autotune pass
-    std::vector<int> notesTk = dynamic_cast<PrismizerAudioProcessorEditor*>(getActiveEditor())->tKey.getValidNotes();
-    float tFreq = roundFreqToNearestNote(pitchEst, notesTk);
-    
-    DBG(tFreq);
-    
-    if (true)   //change this to if autotune toggle is on
+    auto activeEditor = dynamic_cast<PrismizerAudioProcessorEditor*>(getActiveEditor());
+    if(activeEditor != nullptr)
     {
-        autotuneShift.smbPitchShift(PitchShift::getshiftRatio(pitchEst, tFreq), buffer.getNumSamples(), 1024, 32, (float*)buffer.getReadPointer(0), buffer.getWritePointer(0));
+        notesTk = activeEditor->tKey.getValidNotes();
     }
+
+    tFreq = roundFreqToNearestNote(pitchEst, notesTk);
+    
+//    DBG(tFreq);
+  
+    //if autotune is on
+    if (*params.getRawParameterValue("autotune"))
+    {
+        //apply shift to raw buffer and copy across channels
+        autotuneShift.smbPitchShift(PitchShift::getshiftRatio(pitchEst, tFreq), buffer.getNumSamples(), 1024, 32, (float*)buffer.getReadPointer(0), buffer.getWritePointer(0));
+        buffer.copyFrom(1, 0, (float*)buffer.getReadPointer(0), buffer.getNumSamples());
+    }
+    
+    
     
     
 
@@ -276,6 +288,12 @@ void PrismizerAudioProcessor::setStateInformation (const void* data, int sizeInB
     // whose contents will have been created by the getStateInformation() call.
 }
 
+int PrismizerAudioProcessor::getTargetFreqAsNote()
+{
+    DBG(tFreq << " " << getMidiNoteFromHz(tFreq));
+    return getMidiNoteFromHz(tFreq);
+}
+
 //==============================================================================
 // This creates new instances of the plugin..
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
@@ -286,7 +304,12 @@ juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 
 int PrismizerAudioProcessor::getMidiNoteFromHz (float hz)
 {
-    return log(hz/440.0)/log(2) * 12 + 69;
+    if((int)hz == -1)
+    {
+        return -1;
+    }
+    float bump = hz/100.0;
+    return 69 + (12 * log2((hz+bump)/440.0));
 }
 
 //rounds supplied freq to closest midi note from provided vector. Vector takes the form of: 0 = c, 1 = c#...
@@ -294,6 +317,11 @@ float PrismizerAudioProcessor::roundFreqToNearestNote(float inFreq, std::vector<
 {
     float bestFreq = 0.0;
     float bestDist = 10000.0;
+    
+    if((int)inFreq == -1)
+    {
+        return -1;
+    }
     
     for(int note : useNotes)
     {

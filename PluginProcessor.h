@@ -63,6 +63,8 @@ public:
     
     //==============================================================================
     
+    int getTargetFreqAsNote();
+    
     juce::AudioProcessorValueTreeState params;
 
 private:
@@ -85,8 +87,10 @@ private:
     
     //shifter for optional autotune sequence
     PitchShift autotuneShift;
-    
-    //rounds supplied freq to closest midi note from provided vector. Vector takes the form of: 0 = c, 1 = c#...
+    float tFreq = 8.1758;    //target frequency for autotune
+    std::vector<int> notesTk = {0,1,2,3,4,5,6,7,8,9,10,11}; //allowed notes for autotune
+
+    //rounds supplied freq to closest midi note as a frequency from provided vector. Vector takes the form of: 0 = c, 1 = c#...
     static float roundFreqToNearestNote(float inFreq, std::vector<int> useNotes);
     
     //==============================================================================

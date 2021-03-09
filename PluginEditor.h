@@ -21,13 +21,15 @@
 class PrismizerAudioProcessorEditor  :
     public juce::AudioProcessorEditor,
     private juce::Slider::Listener,
-    public juce::Button::Listener
+    public juce::Button::Listener,
+    public juce::Timer
 {
 public:
     PrismizerAudioProcessorEditor (PrismizerAudioProcessor&);
     ~PrismizerAudioProcessorEditor() override;
 
     //==============================================================================
+    void timerCallback() override;
     void paint (juce::Graphics&) override;
     void resized() override;
 
@@ -62,7 +64,9 @@ private:
     
 public:
     
-    //slider attachments for updating params
+    //attachments for updating params
+    
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> autotuneValue;
     
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> attackValue;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> decayValue;
