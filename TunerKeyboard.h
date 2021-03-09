@@ -118,12 +118,59 @@ public:
         // components that your component contains..
 
     }
+
     
-    std::vector<TaggedKey *> getKeysDown()
+    //bitwise encoding of notes vector
+    unsigned int encodeNotesDown()
     {
-        return keysDown;
+        int e = 0;
+        for(auto note : getInvalidNotes())
+        {
+            e = e | (1 << note);
+        }
+        return e;
     }
     
+    //reconstructs vector from encoding
+    void decodeNotesDown(unsigned int encoding)
+    {
+        std::vector<int> d;
+        for(int i = 0; i < 12; i++)
+        {
+            if((encoding >> i) & 1)
+            {
+                d.push_back(i);
+            }
+        }
+        
+        setKeysDownFromNotesDown(d);
+    }
+    
+    //updates keysdown array from state vector and sends callback messages
+    void setKeysDownFromNotesDown(std::vector<int> state)
+    {
+        for(auto key : keys)
+        {
+            if(std::find(state.begin(), state.end(), key->getNote()) != state.end())
+            {
+                key->setToggleState(true, juce::NotificationType::sendNotification);
+            }
+        }
+    }
+    
+    //returns all notes that are down in int vector representation
+    std::vector<int> getInvalidNotes()
+    {
+        std::vector<int> notes {};
+        
+        for (auto key : keysDown) {
+            notes.push_back(key->getNote());
+        }
+        
+        return notes;
+    }
+    
+    //returns all notes that are up in int vector representation
     std::vector<int> getValidNotes()
     {
         std::vector<int> notes {0,1,2,3,4,5,6,7,8,9,10,11};
@@ -163,6 +210,7 @@ private:
     void buttonClicked(juce::Button *button) override
     {
         auto k = dynamic_cast<TaggedKey *>(button);
+        DBG("button clicked");
         
         if(k == nullptr) return;
         

@@ -33,6 +33,8 @@ params(*this, nullptr, "PARAMETERS", {
     std::make_unique<juce::AudioParameterFloat>("sustain", "Sustain", 0.0f, 20.0f, 1.0f),
     std::make_unique<juce::AudioParameterFloat>("release", "Release", 0.0f, 20.0f, 0.0f),
     
+    std::make_unique<juce::AudioParameterInt>("tunerKeyState", "TunerKeyState", 0, 4095, 0),
+    
     std::make_unique<juce::AudioParameterFloat>("rawVolume", "RawVolume", 0.0f, 1.0f, 1.0f),
     std::make_unique<juce::AudioParameterFloat>("wetVolume", "WetVolume", 0.0f, 1.0f, 1.0f)
     
@@ -301,14 +303,14 @@ juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
     return new PrismizerAudioProcessor();
 }
 
-
+//gets closest midi note from hertz value, takes highest note under hertz plus slight bump to avoid fp errors
 int PrismizerAudioProcessor::getMidiNoteFromHz (float hz)
 {
     if((int)hz == -1)
     {
         return -1;
     }
-    float bump = hz/100.0;
+    float bump = hz/100.0;  //best i can do... might be inaccurate at low frequencies
     return 69 + (12 * log2((hz+bump)/440.0));
 }
 

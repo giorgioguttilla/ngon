@@ -16,6 +16,9 @@ PrismizerAudioProcessorEditor::PrismizerAudioProcessorEditor (PrismizerAudioProc
     //timer will listen for processor pitch detection and adjust tunerkeyboard
     startTimer(100);
     
+    tKey.decodeNotesDown((unsigned int)*audioProcessor.params.getRawParameterValue("tunerKeyState"));
+    
+    
     //ValueTree pointer initializations
     
     autotuneValue = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(audioProcessor.params, "autotune", autotuneToggle);
@@ -104,7 +107,10 @@ void PrismizerAudioProcessorEditor::buttonClicked(juce::Button *button)
 
 PrismizerAudioProcessorEditor::~PrismizerAudioProcessorEditor()
 {
-    
+    auto p = (juce::AudioParameterInt *)audioProcessor.params.getParameter("tunerKeyState");
+    *p = tKey.encodeNotesDown();
+    //= (int)tKey.encodeNotesDown();
+    DBG(*audioProcessor.params.getRawParameterValue("tunerKeyState"));
 }
 
 //sets tunkerkeyboard target value. unset if no autotune active or no note detected
