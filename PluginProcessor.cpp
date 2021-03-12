@@ -28,6 +28,11 @@ params(*this, nullptr, "PARAMETERS", {
     
     std::make_unique<juce::AudioParameterBool>("autotune", "Autotune", false),
     
+    std::make_unique<juce::AudioParameterFloat>("follower1Volume", "Follower1Volume", 0.0f, 1.0f, 1.0f),
+    std::make_unique<juce::AudioParameterFloat>("follower2Volume", "Follower2Volume", 0.0f, 1.0f, 1.0f),
+    std::make_unique<juce::AudioParameterBool>("follower1Active", "Follower1Active", false),
+    std::make_unique<juce::AudioParameterBool>("follower2Active", "Follower2Active", false),
+    
     std::make_unique<juce::AudioParameterFloat>("attack", "Attack", 0.0f, 10.0f, 0.0f),
     std::make_unique<juce::AudioParameterFloat>("decay", "Decay", 0.0f, 5.0f, 0.0f),
     std::make_unique<juce::AudioParameterFloat>("sustain", "Sustain", 0.0f, 20.0f, 1.0f),
@@ -44,7 +49,7 @@ params(*this, nullptr, "PARAMETERS", {
 #endif
 {
     synth.addSound(new PrismSound());
-    for (int i = 0; i < 2; i++){
+    for (int i = 0; i < 4; i++){
         synth.addVoice(new PrismVoice());
     }
 }
@@ -206,7 +211,6 @@ void PrismizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     
     
     
-    
     //SYNTH RENDERING --- copies buffer to processBlock first, then does rendering on processBlock and recombine with buffer after based on wet/dry amount
     processBuffer.clear();
     
@@ -240,8 +244,8 @@ void PrismizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
 
     tFreq = roundFreqToNearestNote(pitchEst, notesTk);
     
-//    DBG(tFreq);
-  
+
+    
     //if autotune is on
     if (*params.getRawParameterValue("autotune"))
     {
@@ -252,8 +256,6 @@ void PrismizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     
     
     
-    
-
     //Gain from the sliders is applied to each respective channel
     buffer.applyGain(*params.getRawParameterValue("rawVolume"));
     processBuffer.applyGain(*params.getRawParameterValue("wetVolume"));

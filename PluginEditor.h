@@ -68,6 +68,11 @@ public:
     
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> autotuneValue;
     
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> fc1VolumeValue;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> fc2VolumeValue;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> fc1ActiveValue;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> fc2ActiveValue;
+    
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> attackValue;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> decayValue;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> sustainValue;

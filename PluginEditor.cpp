@@ -25,6 +25,16 @@ PrismizerAudioProcessorEditor::PrismizerAudioProcessorEditor (PrismizerAudioProc
     
     
     
+    fc1VolumeValue = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.params, "follower1Volume", fc1.pitchSlider);
+    
+    fc2VolumeValue = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.params, "follower2Volume", fc2.pitchSlider);
+    
+    fc1ActiveValue = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(audioProcessor.params, "follower1Active", fc1.toggle);
+    
+    fc2ActiveValue = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(audioProcessor.params, "follower2Active", fc2.toggle);
+    
+    
+    
     attackValue = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.params, "attack", ADSR.attack.slider);
     
     decayValue = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.params, "decay", ADSR.sustain.slider);
@@ -109,7 +119,7 @@ PrismizerAudioProcessorEditor::~PrismizerAudioProcessorEditor()
 {
     auto p = (juce::AudioParameterInt *)audioProcessor.params.getParameter("tunerKeyState");
     *p = tKey.encodeNotesDown();
-    //= (int)tKey.encodeNotesDown();
+
     DBG(*audioProcessor.params.getRawParameterValue("tunerKeyState"));
 }
 
@@ -117,7 +127,6 @@ PrismizerAudioProcessorEditor::~PrismizerAudioProcessorEditor()
 void PrismizerAudioProcessorEditor::timerCallback()
 {
     int noteMod = dynamic_cast<PrismizerAudioProcessor &>(processor).getTargetFreqAsNote() % 12;
-//    DBG(noteMod);
     tKey.setTarget(autotuneToggle.getToggleState() ? noteMod : -1);
 }
 
