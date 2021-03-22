@@ -12,6 +12,8 @@
 
 #define MAX_FRAME_LENGTH 8192
 
+#include <juce_dsp/juce_dsp.h>
+
 class PitchShift {
     
 private:
@@ -27,6 +29,8 @@ private:
     float gSynMagn[MAX_FRAME_LENGTH];
     long gRover = false;
     long gInit = false;
+    
+    std::unique_ptr<juce::dsp::FFT> fft;
     
     float sampleRate = 44100;
     
