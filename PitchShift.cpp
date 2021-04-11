@@ -17,11 +17,12 @@
 #include <iostream>
 
 
-PitchShift::PitchShift()
+PitchShift::PitchShift(float sr, int fftOrder)
 {
-    setSampleRate(44100);
-    
-//    fft = std::make_unique<juce::dsp::FFT>(<#_Args &&__args...#>)
+    setSampleRate(sr);
+//    fft = std::make_unique<juce::dsp::FFT>(fftOrder);
+    fft = std::make_unique<juce::dsp::FFT>(13);
+
 }
 
 PitchShift::~PitchShift()
@@ -48,7 +49,7 @@ void PitchShift::smbFft(float *fftBuffer, long fftFrameSize, long sign)
         of the frequencies of interest is in fftBuffer[0...fftFrameSize].
     */
     
-    auto start = std::chrono::high_resolution_clock::now();
+//    auto start = std::chrono::high_resolution_clock::now();
     
     float wr, wi, arg, *p1, *p2, temp;
     float tr, ti, ur, ui, *p1r, *p1i, *p2r, *p2i;
@@ -91,11 +92,11 @@ void PitchShift::smbFft(float *fftBuffer, long fftFrameSize, long sign)
         }
     }
     
-    auto stop = std::chrono::high_resolution_clock::now();
-    
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
-    
-    std::cout << duration.count() << std::endl;
+//    auto stop = std::chrono::high_resolution_clock::now();
+//
+//    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+//
+//    std::cout << duration.count() << std::endl;
 }
 
 
@@ -164,6 +165,7 @@ void PitchShift::smbPitchShift(float pitchShift, long numSampsToProcess, long ff
             /* ***************** ANALYSIS ******************* */
             /* do transform */
             smbFft(gFFTworksp, fftFrameSize, -1);
+//            fft->performRealOnlyForwardTransform(gFFTworksp);
 
             /* this is the analysis step */
             for (k = 0; k <= fftFrameSize2; k++) {

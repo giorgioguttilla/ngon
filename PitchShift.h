@@ -20,6 +20,7 @@ private:
     float gInFIFO[MAX_FRAME_LENGTH];
     float gOutFIFO[MAX_FRAME_LENGTH];
     float gFFTworksp[2*MAX_FRAME_LENGTH];
+//    float gFFTworksp[2*1024];
     float gLastPhase[MAX_FRAME_LENGTH/2+1];
     float gSumPhase[MAX_FRAME_LENGTH/2+1];
     float gOutputAccum[2*MAX_FRAME_LENGTH];
@@ -33,9 +34,10 @@ private:
     std::unique_ptr<juce::dsp::FFT> fft;
     
     float sampleRate = 44100;
+//    float fftFrameSize = 1024;
     
 public:
-    PitchShift();
+    PitchShift(float sr, int fftOrder);
     ~PitchShift();
     void setSampleRate(float sr);
     void smbFft(float *fftBuffer, long fftFrameSize, long sign);

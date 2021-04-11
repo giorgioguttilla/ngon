@@ -50,7 +50,7 @@ public:
             
             whiteKeys[i]->addListener(this);
             
-            DBG(whiteKeys[i]->getNote());
+//            DBG(whiteKeys[i]->getNote());
             
             keys.push_back(whiteKeys[i]);
             
@@ -69,7 +69,7 @@ public:
             
             blackKeys[i]->addListener(this);
             
-            DBG(blackKeys[i]->getNote());
+//            DBG(blackKeys[i]->getNote());
             
             keys.push_back(blackKeys[i]);
         }
@@ -210,7 +210,7 @@ private:
     void buttonClicked(juce::Button *button) override
     {
         auto k = dynamic_cast<TaggedKey *>(button);
-        DBG("button clicked");
+//        DBG("button clicked");
         
         if(k == nullptr) return;
         

@@ -54,6 +54,8 @@ private:
     VolumeSlider smoothing;
 public:
     TunerKeyboard tKey;
+    
+    juce::TextEditor te;
 private:
     //OUT
     

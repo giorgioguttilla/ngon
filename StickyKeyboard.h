@@ -35,7 +35,7 @@ public:
     {
         for (int i = 0; i < 11; i++) {
             if(state->isNoteOn(getMidiChannel(), i)){
-                DBG(i);
+//                DBG(i);
             }
         }
         
@@ -46,7 +46,7 @@ public:
     {
         for (int i = 0; i < 11; i++) {
             if(state->isNoteOn(getMidiChannel(), i)){
-                DBG(i);
+//                DBG(i);
             }
         }
         return;
