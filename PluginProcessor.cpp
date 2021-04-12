@@ -309,6 +309,12 @@ void PrismizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     {
         //apply shift to raw buffer and copy across channels
         autotuneShift->smbPitchShift(PitchShift::getshiftRatio(pitchEst, tFreq), buffer.getNumSamples(), 1024, 32, (float*)buffer.getReadPointer(0), buffer.getWritePointer(0));
+        
+        //mono-safe copying
+        if(buffer.getNumChannels() > 1)
+        {
+            buffer.copyFrom(1, 0, (float*)buffer.getReadPointer(0), buffer.getNumSamples());
+        }
 //        buffer.copyFrom(1, 0, (float*)buffer.getReadPointer(0), buffer.getNumSamples());
     }
 
@@ -330,7 +336,12 @@ void PrismizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
 //    processBufferChunkIndex++;
 //    buffer.addFrom(0, 0, (float*)processBuffer.getReadPointer(0), processBuffer.getNumSamples());
     buffer.addFrom(0, 0, (float*)processBuffer.getReadPointer(0), buffer.getNumSamples());
-
+    
+    //mono-safe copying
+    if(buffer.getNumChannels() > 1)
+    {
+        buffer.addFrom(1, 0, (float*)processBuffer.getReadPointer(1), processBuffer.getNumSamples());
+    }
 //    buffer.addFrom(1, 0, (float*)processBuffer.getReadPointer(1), processBuffer.getNumSamples());
 
 }
