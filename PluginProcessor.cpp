@@ -324,11 +324,13 @@ void PrismizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
      are putting too much data into buffer.
      */
     
-    int startIndex = processBufferChunkIndex * buffer.getNumSamples();
-    buffer.addFrom(0, 0, (float*)processBuffer.getReadPointer(0, startIndex), buffer.getNumSamples());
-    
-    processBufferChunkIndex++;
+//    int startIndex = processBufferChunkIndex * buffer.getNumSamples();
+//    buffer.addFrom(0, 0, (float*)processBuffer.getReadPointer(0, startIndex), buffer.getNumSamples());
+//
+//    processBufferChunkIndex++;
 //    buffer.addFrom(0, 0, (float*)processBuffer.getReadPointer(0), processBuffer.getNumSamples());
+    buffer.addFrom(0, 0, (float*)processBuffer.getReadPointer(0), buffer.getNumSamples());
+
 //    buffer.addFrom(1, 0, (float*)processBuffer.getReadPointer(1), processBuffer.getNumSamples());
 
 }
