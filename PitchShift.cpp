@@ -48,9 +48,7 @@ void PitchShift::smbFft(float *fftBuffer, long fftFrameSize, long sign)
         passed as {in[0],0.,in[1],0.,in[2],0.,...} asf. In that case, the transform
         of the frequencies of interest is in fftBuffer[0...fftFrameSize].
     */
-    
-//    auto start = std::chrono::high_resolution_clock::now();
-    
+        
     float wr, wi, arg, *p1, *p2, temp;
     float tr, ti, ur, ui, *p1r, *p1i, *p2r, *p2i;
     long i, bitm, j, le, le2, k;
@@ -91,12 +89,6 @@ void PitchShift::smbFft(float *fftBuffer, long fftFrameSize, long sign)
             ur = tr;
         }
     }
-    
-//    auto stop = std::chrono::high_resolution_clock::now();
-//
-//    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
-//
-//    std::cout << duration.count() << std::endl;
 }
 
 

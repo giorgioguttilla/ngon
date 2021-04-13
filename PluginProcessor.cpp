@@ -19,7 +19,6 @@ PrismizerAudioProcessor::PrismizerAudioProcessor()
      : AudioProcessor (BusesProperties()
                      #if ! JucePlugin_IsMidiEffect
                       #if ! JucePlugin_IsSynth
-//                       .withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
                       #endif
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
@@ -125,32 +124,40 @@ void PrismizerAudioProcessor::changeProgramName (int index, const juce::String& 
 //==============================================================================
 void PrismizerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    // Use this method as the place to do any pre-playback
-    // initialisation that you need..
+    /*
+     All necessary classes are instantiated here.
+     
+     Note that samplesPerBlock is the MAX possible buffer size, not the actual one that
+     will be used in processing. We thus instantiate buffers with enough space for
+     samplesPerBlock samples but will only do processing on buffer.getNumSamples()
+     samples.
+     */
     
+    //saves sample rate
     sr = sampleRate;
         
     //create new window manager
     wm = new WindowManager(winsize, samplesPerBlock);
-//    wm->clearWindow();
     
+    //create pitch estimator
     yin = std::make_unique<Yin>(sr, wm->getWindowSize());
     
-    //instantiate processbuffer properly, will be sent to each voice in the preparetoplay method 
+    //instantiate processbuffer with max possble samples, will be sent to each voice in the preparetoplay method
     processBuffer.setSize(2, samplesPerBlock);
     
     synth.setCurrentPlaybackSampleRate(sampleRate);
     
     for (int i = 0; i < synth.getNumVoices(); i++)
     {
+        
         if(auto voice = dynamic_cast<PrismVoice*>(synth.getVoice(i)))
         {
             voice->prepareToPlay(sampleRate, samplesPerBlock, getTotalNumOutputChannels(), &processBuffer);
         }
+        
     }
     
     //need to instantiate and give autotune shift proper sample rate
-//    autotuneShift.setSampleRate(sampleRate);
     autotuneShift = std::make_unique<PitchShift>(sampleRate, 1024);
     
     
@@ -189,69 +196,43 @@ bool PrismizerAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts
 }
 #endif
 
-//TEST
-//void PrismizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
-//{
-//    float* inData = (float*)buffer.getReadPointer (0);
-//
-//    DBG("-");
-//
-//    wm->append(inData);
-//
-//    if (wm->isFull()){
-//
-//        DBG("isfull");
-//
-//        Yin yin = Yin(sr, wm->getWindowSize()); //could probably be more efficient, might lead to mem leak
-//
-//        pitchEst = yin.getPitch(&wm->getWindow()[0]);
-//
-//        //Updates raw pitch target in each synth voice
-//        for (int i = 0; i < synth.getNumVoices(); ++i){
-//
-//            if (auto voice = dynamic_cast<PrismVoice*>(synth.getVoice(i))){
-//
-//                voice->setInPitch(pitchEst);
-//
-//            }
-//
-//        }
-//
-//    }
-//
-//}
 
-//NEW
+
 void PrismizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
-    //windowmanager needs to know buffer size, which cant be found in preparetoplay(?)
+    
+    /*
+     Block processing is performed in a series of stages:
+     
+     WINDOWING/ESTIMATION - series of buffers are accumulated and processed at the same time
+     to determine pitch. Processing happens every samplesPerBlock/buffer.getNumSamples() calls.
+     Each synth voice then gets an update from this analysis
+     
+     SYNTH RENDERING - synth processing occurs. processBuffer is used to accumulate all
+     separate voice outputs for mixin with raw signal. Within each synth voice is where
+     pitch shifting occurs. Necessary parameters are applied
+     
+     */
+    
+    //WINDOWING/ESTIMATION
+    
+    //windowmanager needs to update buffer size if it is less than samplesPerBlock
     if(wm->getBufferSize() != buffer.getNumSamples())
     {
         wm = new WindowManager(wm->getWindowSize(), buffer.getNumSamples());
     }
     
-    //appends in buffer to list of previous buffers, then performs analysis once window is full
+    //accumulates buffers in wm, then performs analysis once window is full
     float* inData = (float*)buffer.getReadPointer (0);
-
-//    DBG(buffer.getNumSamples());
 
     wm->append(inData);
     
-    DBG("-");
-    
-//    dynamic_cast<PrismizerAudioProcessorEditor *>(getActiveEditor())->te.setText("worked");
-
     if (wm->isFull()){
-
-//        Yin yin = Yin(sr, wm->getWindowSize()); //could probably be more efficient, might lead to mem leak
    
-//        pitchEst = yin.getPitch(&wm->getWindow().at(0));   //converts vector to array ptr
+        //get estimated pitch from accumulated buffer
         pitchEst = yin->getPitch(&wm->getWindow().at(0));   //converts vector to array ptr
 
-        
-        DBG(pitchEst);
-
-        //Updates raw pitch target in each synth voice
+        //Updates hz pitch target in each synth voice
         for (int i = 0; i < synth.getNumVoices(); ++i){
 
             if (auto voice = dynamic_cast<PrismVoice*>(synth.getVoice(i))){
@@ -262,13 +243,13 @@ void PrismizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
 
         }
         
-        processBufferChunkIndex = 0;
-
     }
 
 
 
-    //SYNTH RENDERING --- copies buffer to processBlock first, then does rendering on processBlock and recombine with buffer after based on wet/dry amount
+    //SYNTH RENDERING
+    
+    //reset processbuffer for this call
     processBuffer.clear();
 
     //update voices' ADSR envelopes
@@ -285,13 +266,10 @@ void PrismizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
         }
     }
 
-
     //This method triggers all voice process methods, which accumulate their output to the process buffer supplied in prepareToPlay
     synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
 
 
-
-    //AUTOTUNE AND FOLLOWERS --- determines from the list of allowed keys the closest note to snap to, and if autotune is enabled shift raw signal accordingly. Autotune is applied at this point to prevent distortion in the synth signal.
 
     //gets target frequency for autotune pass
     auto activeEditor = dynamic_cast<PrismizerAudioProcessorEditor*>(getActiveEditor());
@@ -310,12 +288,12 @@ void PrismizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
         //apply shift to raw buffer and copy across channels
         autotuneShift->smbPitchShift(PitchShift::getshiftRatio(pitchEst, tFreq), buffer.getNumSamples(), 1024, 32, (float*)buffer.getReadPointer(0), buffer.getWritePointer(0));
         
-        //mono-safe copying
+        //mono-safe copying to stereo
         if(buffer.getNumChannels() > 1)
         {
             buffer.copyFrom(1, 0, (float*)buffer.getReadPointer(0), buffer.getNumSamples());
         }
-//        buffer.copyFrom(1, 0, (float*)buffer.getReadPointer(0), buffer.getNumSamples());
+
     }
 
 
@@ -325,118 +303,17 @@ void PrismizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     processBuffer.applyGain(*params.getRawParameterValue("wetVolume"));
 
 
-    /*processBuffer is always >= buffer size, since batch processing is done only when window is full we need to
-     leak out data from processBuffer as new window is being accumulated in chunks of buffer size, otherwise we
-     are putting too much data into buffer.
-     */
-    
-//    int startIndex = processBufferChunkIndex * buffer.getNumSamples();
-//    buffer.addFrom(0, 0, (float*)processBuffer.getReadPointer(0, startIndex), buffer.getNumSamples());
-//
-//    processBufferChunkIndex++;
-//    buffer.addFrom(0, 0, (float*)processBuffer.getReadPointer(0), processBuffer.getNumSamples());
+    //mono-safe mixin from processBuffer, note that buffer already has raw signal so we are adding not copying
     buffer.addFrom(0, 0, (float*)processBuffer.getReadPointer(0), buffer.getNumSamples());
     
-    //mono-safe copying
     if(buffer.getNumChannels() > 1)
     {
         buffer.addFrom(1, 0, (float*)processBuffer.getReadPointer(1), processBuffer.getNumSamples());
     }
-//    buffer.addFrom(1, 0, (float*)processBuffer.getReadPointer(1), processBuffer.getNumSamples());
 
 }
 
-//OLD
-//void PrismizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
-//{
-//    tx++;
-////    DBG(tx);
-//
-//    //appends in buffer to list of previous buffers, then performs analysis once window is full
-//    float* inData = (float*)buffer.getReadPointer (0);
-//
-//    DBG(buffer.getNumSamples());
-//
-//    wm->append(inData);
-//
-//    if (wm->isFull()){
-//
-//        Yin yin = Yin(sr, wm->getWindowSize()); //could probably be more efficient, might lead to mem leak
-//
-//        pitchEst = yin.getPitch(wm->getWindow());
-//
-//        //Updates raw pitch target in each synth voice
-//        for (int i = 0; i < synth.getNumVoices(); ++i){
-//
-//            if (auto voice = dynamic_cast<PrismVoice*>(synth.getVoice(i))){
-//
-//                voice->setInPitch(pitchEst);
-//
-//            }
-//
-//        }
-//
-//    }
-//
-//
-//
-//    //SYNTH RENDERING --- copies buffer to processBlock first, then does rendering on processBlock and recombine with buffer after based on wet/dry amount
-//    processBuffer.clear();
-//
-//    //update voices' ADSR envelopes
-//    for (int i = 0; i < synth.getNumVoices(); ++i){
-//        if (auto voice = dynamic_cast<PrismVoice*>(synth.getVoice(i))){
-//            juce::ADSR::Parameters adsrParams = juce::ADSR::Parameters();
-//
-//            adsrParams.attack = *params.getRawParameterValue("attack");
-//            adsrParams.decay = *params.getRawParameterValue("decay");
-//            adsrParams.sustain = *params.getRawParameterValue("sustain");
-//            adsrParams.release = *params.getRawParameterValue("release");
-//
-//            voice->adsr.setParameters(adsrParams);
-//        }
-//    }
-//
-//
-//    //This method triggers all voice process methods, which accumulate their output to the process buffer supplied in prepareToPlay
-//    synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
-//
-//
-//
-//    //AUTOTUNE AND FOLLOWERS --- determines from the list of allowed keys the closest note to snap to, and if autotune is enabled shift raw signal accordingly. Autotune is applied at this point to prevent distortion in the synth signal.
-//
-//    //gets target frequency for autotune pass
-//    auto activeEditor = dynamic_cast<PrismizerAudioProcessorEditor*>(getActiveEditor());
-//    if(activeEditor != nullptr)
-//    {
-//        notesTk = activeEditor->tKey.getValidNotes();
-//    }
-//
-//    tFreq = roundFreqToNearestNote(pitchEst, notesTk);
-//
-//
-//
-//    //if autotune is on
-//    if (*params.getRawParameterValue("autotune"))
-//    {
-//        //apply shift to raw buffer and copy across channels
-//        autotuneShift->smbPitchShift(PitchShift::getshiftRatio(pitchEst, tFreq), buffer.getNumSamples(), 1024, 32, (float*)buffer.getReadPointer(0), buffer.getWritePointer(0));
-////        buffer.copyFrom(1, 0, (float*)buffer.getReadPointer(0), buffer.getNumSamples());
-//    }
-//
-//
-//
-//    //Gain from the sliders is applied to each respective channel
-//    buffer.applyGain(*params.getRawParameterValue("rawVolume"));
-//    processBuffer.applyGain(*params.getRawParameterValue("wetVolume"));
-//
-//
-//
-//    buffer.addFrom(0, 0, (float*)processBuffer.getReadPointer(0), processBuffer.getNumSamples());
-////    buffer.addFrom(1, 0, (float*)processBuffer.getReadPointer(1), processBuffer.getNumSamples());
-//
-////    DBG(tx);
-//}
+
 
 //==============================================================================
 bool PrismizerAudioProcessor::hasEditor() const
