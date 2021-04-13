@@ -41,21 +41,18 @@ private:
     // access the processor object that created it.
     PrismizerAudioProcessor& audioProcessor;
     
-    //IN
-    
-    juce::ToggleButton autotuneToggle;
-    
-    FollowerControl fc1;
-    FollowerControl fc2;
-    
-    //PROCESS
-    
+
+    //ADSR
     AdsrControls ADSR;
-    VolumeSlider smoothing;
-public:
-    TunerKeyboard tKey;
     
-    juce::TextEditor te;
+    //PITCH
+    VolumeSlider smoothing;
+    VolumeSlider detune;
+    VolumeSlider spread;
+    
+    //MODULATION
+    
+    
 private:
     //OUT
     
@@ -68,18 +65,14 @@ public:
     
     //attachments for updating params
     
-    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> autotuneValue;
-    
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> fc1VolumeValue;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> fc2VolumeValue;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> fc1ActiveValue;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> fc2ActiveValue;
-    
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> attackValue;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> decayValue;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> sustainValue;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> releaseValue;
-
+    
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> smoothingValue;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> detuneValue;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> spreadValue;
     
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> rawVolumeValue;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> wetVolumeValue;

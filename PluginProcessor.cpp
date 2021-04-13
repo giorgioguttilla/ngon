@@ -26,20 +26,15 @@ PrismizerAudioProcessor::PrismizerAudioProcessor()
                        ),
 params(*this, nullptr, "PARAMETERS", {
     
-    std::make_unique<juce::AudioParameterBool>("autotune", "Autotune", false),
-    
-    std::make_unique<juce::AudioParameterFloat>("follower1Volume", "Follower1Volume", 0.0f, 1.0f, 1.0f),
-    std::make_unique<juce::AudioParameterFloat>("follower2Volume", "Follower2Volume", 0.0f, 1.0f, 1.0f),
-    std::make_unique<juce::AudioParameterBool>("follower1Active", "Follower1Active", false),
-    std::make_unique<juce::AudioParameterBool>("follower2Active", "Follower2Active", false),
-    
     std::make_unique<juce::AudioParameterFloat>("attack", "Attack", 0.0f, 10.0f, 0.0f),
     std::make_unique<juce::AudioParameterFloat>("decay", "Decay", 0.0f, 5.0f, 0.0f),
     std::make_unique<juce::AudioParameterFloat>("sustain", "Sustain", 0.0f, 20.0f, 1.0f),
     std::make_unique<juce::AudioParameterFloat>("release", "Release", 0.0f, 20.0f, 0.0f),
     
-    std::make_unique<juce::AudioParameterInt>("tunerKeyState", "TunerKeyState", 0, 4095, 0),
-    
+    std::make_unique<juce::AudioParameterFloat>("smoothing", "Smoothing", 0.0f, 1.0f, 0.1f),
+    std::make_unique<juce::AudioParameterFloat>("detune", "Detune", 0.0f, 1.0f, 0.1f),
+    std::make_unique<juce::AudioParameterFloat>("spread", "Spread", 0.0f, 1.0f, 0.1f),
+        
     std::make_unique<juce::AudioParameterFloat>("rawVolume", "RawVolume", 0.0f, 1.0f, 1.0f),
     std::make_unique<juce::AudioParameterFloat>("wetVolume", "WetVolume", 0.0f, 1.0f, 1.0f)
     
@@ -157,11 +152,6 @@ void PrismizerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
         
     }
     
-    //need to instantiate and give autotune shift proper sample rate
-    autotuneShift = std::make_unique<PitchShift>(sampleRate, 1024);
-    
-    
-    
 }
 
 void PrismizerAudioProcessor::releaseResources()
@@ -245,6 +235,8 @@ void PrismizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
         
     }
 
+    
+    DBG(std::to_string(*params.getRawParameterValue("smoothing")));
 
 
     //SYNTH RENDERING
@@ -271,39 +263,13 @@ void PrismizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
 
 
 
-    //gets target frequency for autotune pass
-    auto activeEditor = dynamic_cast<PrismizerAudioProcessorEditor*>(getActiveEditor());
-    if(activeEditor != nullptr)
-    {
-        notesTk = activeEditor->tKey.getValidNotes();
-    }
-
-    tFreq = roundFreqToNearestNote(pitchEst, notesTk);
-
-
-
-    //if autotune is on
-    if (*params.getRawParameterValue("autotune"))
-    {
-        //apply shift to raw buffer and copy across channels
-        autotuneShift->smbPitchShift(PitchShift::getshiftRatio(pitchEst, tFreq), buffer.getNumSamples(), 1024, 32, (float*)buffer.getReadPointer(0), buffer.getWritePointer(0));
-        
-        //mono-safe copying to stereo
-        if(buffer.getNumChannels() > 1)
-        {
-            buffer.copyFrom(1, 0, (float*)buffer.getReadPointer(0), buffer.getNumSamples());
-        }
-
-    }
-
-
-
     //Gain from the sliders is applied to each respective channel
     buffer.applyGain(*params.getRawParameterValue("rawVolume"));
     processBuffer.applyGain(*params.getRawParameterValue("wetVolume"));
 
 
     //mono-safe mixin from processBuffer, note that buffer already has raw signal so we are adding not copying
+    //and that we are only copying buffer.getNumSamples() samples
     buffer.addFrom(0, 0, (float*)processBuffer.getReadPointer(0), buffer.getNumSamples());
     
     if(buffer.getNumChannels() > 1)
@@ -340,11 +306,6 @@ void PrismizerAudioProcessor::setStateInformation (const void* data, int sizeInB
     // whose contents will have been created by the getStateInformation() call.
 }
 
-int PrismizerAudioProcessor::getTargetFreqAsNote()
-{
-//    DBG(tFreq << " " << getMidiNoteFromHz(tFreq));
-    return getMidiNoteFromHz(tFreq);
-}
 
 //==============================================================================
 // This creates new instances of the plugin..
