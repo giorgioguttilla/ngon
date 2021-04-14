@@ -82,6 +82,7 @@ public:
     juce::AudioBuffer<float> *getWriteBuffer();
     void setProcessBufferPtr(juce::AudioBuffer<float> *pbp);
     void setInPitch (float pitch);
+    void setPitchSmoothDuration(double sr, float rate);
     
     juce::ADSR adsr;
     juce::ADSR::Parameters adsrParams;
@@ -96,7 +97,7 @@ private:
     std::unique_ptr<PitchShift> pShift;
     
     float inPitch;
-    float outPitch = 440;
+    juce::SmoothedValue<float, juce::ValueSmoothingTypes::Multiplicative> outPitch {440};
     
     long fftFrameSize = 1024;
     long os = 32;

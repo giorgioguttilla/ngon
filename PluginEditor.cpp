@@ -9,6 +9,7 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 #include <string>
+#include "PrismVoice.h"
 
 //==============================================================================
 PrismizerAudioProcessorEditor::PrismizerAudioProcessorEditor (PrismizerAudioProcessor& p)
@@ -93,7 +94,6 @@ PrismizerAudioProcessorEditor::PrismizerAudioProcessorEditor (PrismizerAudioProc
     
     //-------------------------------------------------------
     
-
     addAndMakeVisible(&ADSR);
     addAndMakeVisible(&smoothing);
     addAndMakeVisible(&detune);
@@ -109,7 +109,17 @@ PrismizerAudioProcessorEditor::PrismizerAudioProcessorEditor (PrismizerAudioProc
 
 void PrismizerAudioProcessorEditor::sliderValueChanged(juce::Slider *slider)
 {
-    audioProcessor.noteOnVel = rawVolume.slider.getValue();
+    audioProcessor.noteOnVel = rawVolume.slider.getValue(); //not sure what this is even doing
+    
+    //handle smoothing updates
+    if(slider == &smoothing.slider)
+    {
+        for (int i = 0; i < audioProcessor.synth.getNumVoices(); ++i){
+            if (auto voice = dynamic_cast<PrismVoice*>(audioProcessor.synth.getVoice(i))){
+                voice->setPitchSmoothDuration(audioProcessor.sr, *audioProcessor.params.getRawParameterValue("smoothing"));
+            }
+        }
+    }
 }
 
 void PrismizerAudioProcessorEditor::buttonClicked(juce::Button *button)

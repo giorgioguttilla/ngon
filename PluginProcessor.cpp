@@ -52,7 +52,7 @@ params(*this, nullptr, "PARAMETERS", {
 #endif
 {
     synth.addSound(new PrismSound());
-    for (int i = 0; i < 1; i++){
+    for (int i = 0; i < 2; i++){
         synth.addVoice(new PrismVoice());
     }
 }
@@ -243,7 +243,7 @@ void PrismizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     }
 
     
-    DBG(std::to_string(*params.getRawParameterValue("tremoloRate")));
+    DBG(std::to_string(*params.getRawParameterValue("smoothing")));
     DBG(std::to_string(*params.getRawParameterValue("tremoloDepth")));
     DBG(std::to_string(*params.getRawParameterValue("tremoloTrigger")));
     DBG("---");

@@ -29,7 +29,8 @@ bool PrismVoice::canPlaySound (juce::SynthesiserSound *sound)
 void PrismVoice::startNote (int midiNoteNumber, float velocity, juce::SynthesiserSound *sound, int currentPitchWheelPosition)
 {
     adsr.noteOn();
-    outPitch = juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber);
+//    outPitch = juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber);
+    outPitch.setTargetValue(juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber));
 }
 
 void PrismVoice::stopNote (float velocity, bool allowTailOff)
@@ -60,17 +61,18 @@ void PrismVoice::prepareToPlay(double sampleRate, int samplesPerBlock, int outpu
     
     setProcessBufferPtr(pbp);
     
+    outPitch.reset(sampleRate, 0.0);
+    
 }
 
 void PrismVoice::renderNextBlock (juce::AudioBuffer<float> &outputBuffer, int startSample, int numSamples)
 {
     
     //gets ratio between pitch of raw and pitch of played note
+    float shift = PitchShift::getshiftRatio(inPitch, outPitch.getNextValue());
 
-    float shift = PitchShift::getshiftRatio(inPitch, outPitch);
     
     //copies in buffer to temp, does processing, and adds back to out buffer
-    
     tempBuf.clear();
     
     tempBuf.copyFrom(0, startSample, outputBuffer.getReadPointer(0), numSamples);
@@ -80,7 +82,6 @@ void PrismVoice::renderNextBlock (juce::AudioBuffer<float> &outputBuffer, int st
     adsr.applyEnvelopeToBuffer(tempBuf, startSample, numSamples);
     
     //sends to each channel equally, might need to change later
-    
     processBufferPtr->addFrom(0, startSample, tempBuf.getReadPointer(0), numSamples);
     processBufferPtr->addFrom(1, startSample, tempBuf.getReadPointer(0), numSamples);
     
@@ -100,4 +101,13 @@ void PrismVoice::setProcessBufferPtr(juce::AudioBuffer<float> *pbp){
 void PrismVoice::setInPitch(float pitch)
 {
     inPitch = pitch;
+}
+
+void PrismVoice::setPitchSmoothDuration(double sr, float rate)
+{
+    float tv = outPitch.getTargetValue();
+    
+    outPitch.reset(sr, rate/100);
+    
+    outPitch.setTargetValue(tv);
 }
