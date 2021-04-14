@@ -34,6 +34,14 @@ params(*this, nullptr, "PARAMETERS", {
     std::make_unique<juce::AudioParameterFloat>("smoothing", "Smoothing", 0.0f, 1.0f, 0.1f),
     std::make_unique<juce::AudioParameterFloat>("detune", "Detune", 0.0f, 1.0f, 0.1f),
     std::make_unique<juce::AudioParameterFloat>("spread", "Spread", 0.0f, 1.0f, 0.1f),
+    
+    std::make_unique<juce::AudioParameterFloat>("vibratoRate", "VibratoRate", 0.1f, 20.0f, 1.0f),
+    std::make_unique<juce::AudioParameterFloat>("vibratoDepth", "VibratoDepth", 0.0f, 1.0f, 0.0f),
+    std::make_unique<juce::AudioParameterBool>("vibratoTrigger", "VibratoTrigger", false),
+    
+    std::make_unique<juce::AudioParameterFloat>("tremoloRate", "TremoloRate", 0.1f, 20.0f, 1.0f),
+    std::make_unique<juce::AudioParameterFloat>("tremoloDepth", "TremoloDepth", 0.0f, 1.0f, 0.0f),
+    std::make_unique<juce::AudioParameterBool>("tremoloTrigger", "TremoloTrigger", false),
         
     std::make_unique<juce::AudioParameterFloat>("rawVolume", "RawVolume", 0.0f, 1.0f, 1.0f),
     std::make_unique<juce::AudioParameterFloat>("wetVolume", "WetVolume", 0.0f, 1.0f, 1.0f)
@@ -201,7 +209,6 @@ void PrismizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
      SYNTH RENDERING - synth processing occurs. processBuffer is used to accumulate all
      separate voice outputs for mixin with raw signal. Within each synth voice is where
      pitch shifting occurs. Necessary parameters are applied
-     
      */
     
     //WINDOWING/ESTIMATION
@@ -236,7 +243,10 @@ void PrismizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     }
 
     
-    DBG(std::to_string(*params.getRawParameterValue("smoothing")));
+    DBG(std::to_string(*params.getRawParameterValue("tremoloRate")));
+    DBG(std::to_string(*params.getRawParameterValue("tremoloDepth")));
+    DBG(std::to_string(*params.getRawParameterValue("tremoloTrigger")));
+    DBG("---");
 
 
     //SYNTH RENDERING

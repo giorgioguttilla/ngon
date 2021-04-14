@@ -20,11 +20,8 @@ PrismizerAudioProcessorEditor::PrismizerAudioProcessorEditor (PrismizerAudioProc
     //ValueTree pointer initializations
     
     attackValue = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.params, "attack", ADSR.attack.slider);
-    
     decayValue = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.params, "decay", ADSR.sustain.slider);
-    
     sustainValue = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.params, "sustain", ADSR.sustain.slider);
-    
     releaseValue = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.params, "release", ADSR.release.slider);
     
     
@@ -34,7 +31,19 @@ PrismizerAudioProcessorEditor::PrismizerAudioProcessorEditor (PrismizerAudioProc
     detuneValue = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.params, "detune", detune.slider);
 
     spreadValue = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.params, "spread", spread.slider);
-
+    
+    
+    
+    vibratoRateValue = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.params, "vibratoRate", vibrato.rateSlider.slider);
+    vibratoDepthValue = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.params, "vibratoDepth", vibrato.depthSlider.slider);
+    vibratoTriggerValue = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(audioProcessor.params, "vibratoTrigger", vibrato.triggerButton);
+    
+    
+    
+    tremoloRateValue = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.params, "tremoloRate", tremolo.rateSlider.slider);
+    tremoloDepthValue = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.params, "tremoloDepth", tremolo.depthSlider.slider);
+    tremoloTriggerValue = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(audioProcessor.params, "tremoloTrigger", tremolo.triggerButton);
+    
     
     
     rawVolumeValue = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.params, "rawVolume", rawVolume.slider);
@@ -54,6 +63,9 @@ PrismizerAudioProcessorEditor::PrismizerAudioProcessorEditor (PrismizerAudioProc
     detune.setText("detune");
     spread.setText("spread");
     
+    vibrato.setText("vibrato");
+    tremolo.setText("tremolo");
+    
     rawVolume.setText("Dry");
     wetVolume.setText("Wet");
     
@@ -68,6 +80,14 @@ PrismizerAudioProcessorEditor::PrismizerAudioProcessorEditor (PrismizerAudioProc
     detune.slider.addListener(this);
     spread.slider.addListener(this);
     
+    vibrato.rateSlider.slider.addListener(this);
+    vibrato.depthSlider.slider.addListener(this);
+    vibrato.triggerButton.addListener(this);
+    
+    tremolo.rateSlider.slider.addListener(this);
+    tremolo.depthSlider.slider.addListener(this);
+    tremolo.triggerButton.addListener(this);
+    
     rawVolume.slider.addListener(this);
     wetVolume.slider.addListener(this);
     
@@ -78,6 +98,8 @@ PrismizerAudioProcessorEditor::PrismizerAudioProcessorEditor (PrismizerAudioProc
     addAndMakeVisible(&smoothing);
     addAndMakeVisible(&detune);
     addAndMakeVisible(&spread);
+    addAndMakeVisible(&vibrato);
+    addAndMakeVisible(&tremolo);
     addAndMakeVisible(&rawVolume);
     addAndMakeVisible(&wetVolume);
         
@@ -126,6 +148,8 @@ void PrismizerAudioProcessorEditor::resized()
     smoothing.setTopLeftPosition(0, 200);
     detune.setTopLeftPosition(100, 200);
     spread.setTopLeftPosition(200, 200);
+    vibrato.setTopLeftPosition(100, 200);
+    tremolo.setTopLeftPosition(300, 200);
     wetVolume.setTopLeftPosition(rawVolume.getX() + rawVolume.getWidth(), 0);
     
 }

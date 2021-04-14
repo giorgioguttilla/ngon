@@ -14,6 +14,7 @@
 #include "FollowerControl.h"
 #include "AdsrControls.h"
 #include "TunerKeyboard.h"
+#include "LFOGroup.h"
 
 //==============================================================================
 /**
@@ -40,7 +41,6 @@ private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     PrismizerAudioProcessor& audioProcessor;
-    
 
     //ADSR
     AdsrControls ADSR;
@@ -51,7 +51,8 @@ private:
     VolumeSlider spread;
     
     //MODULATION
-    
+    LFOGroup vibrato;
+    LFOGroup tremolo;
     
 private:
     //OUT
@@ -73,6 +74,14 @@ public:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> smoothingValue;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> detuneValue;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> spreadValue;
+    
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> vibratoRateValue;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> vibratoDepthValue;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> vibratoTriggerValue;
+    
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> tremoloRateValue;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> tremoloDepthValue;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> tremoloTriggerValue;
     
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> rawVolumeValue;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> wetVolumeValue;
