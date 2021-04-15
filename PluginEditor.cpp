@@ -130,6 +130,16 @@ void PrismizerAudioProcessorEditor::sliderValueChanged(juce::Slider *slider)
             }
         }
     }
+    
+    //handle spread updates
+    if(slider == &spread.slider)
+    {
+        for (int i = 0; i < audioProcessor.synth.getNumVoices(); ++i){
+            if (auto voice = dynamic_cast<PrismVoice*>(audioProcessor.synth.getVoice(i))){
+                voice->setSpreadLevel(*audioProcessor.params.getRawParameterValue("spread"));
+            }
+        }
+    }
 }
 
 void PrismizerAudioProcessorEditor::buttonClicked(juce::Button *button)

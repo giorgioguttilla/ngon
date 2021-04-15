@@ -84,6 +84,7 @@ public:
     void setInPitch (float pitch);
     void setPitchSmoothDuration(double sr, float rate);
     void setDetuneRate(float rate);
+    void setSpreadLevel(float level);
     
     juce::ADSR adsr;
     juce::ADSR::Parameters adsrParams;
@@ -102,6 +103,8 @@ private:
     
     float detuneLinearValue = 0.0;
     float detuneRate = 0.0;
+    
+    float spreadLevel = 0.0;
     
     long fftFrameSize = 1024;
     long os = 32;

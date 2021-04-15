@@ -81,7 +81,12 @@ void PrismVoice::renderNextBlock (juce::AudioBuffer<float> &outputBuffer, int st
     //gets ratio between pitch of raw and pitch of played note with detune difference added/subtracted
     float adjOutPitch = outPitch.getNextValue() + detuneDifference;
     
+    //ratio between in and out pitch
     float shift = PitchShift::getshiftRatio(inPitch, adjOutPitch);
+    
+    
+    //pan will be applied as gain to L, inverse to R
+    float panLevel = (spreadLevel * (log2(shift) / 2));
     
     
     //copies in buffer to temp, does processing, and adds back to out buffer
@@ -94,8 +99,8 @@ void PrismVoice::renderNextBlock (juce::AudioBuffer<float> &outputBuffer, int st
     adsr.applyEnvelopeToBuffer(tempBuf, startSample, numSamples);
     
     //sends to each channel equally, might need to change later
-    processBufferPtr->addFrom(0, startSample, tempBuf.getReadPointer(0), numSamples);
-    processBufferPtr->addFrom(1, startSample, tempBuf.getReadPointer(0), numSamples);
+    processBufferPtr->addFrom(0, startSample, tempBuf.getReadPointer(0), numSamples, 0.5 + panLevel);
+    processBufferPtr->addFrom(1, startSample, tempBuf.getReadPointer(0), numSamples, 0.5 - panLevel);
     
     
     //bounds on detune, totally unnecessary to be this high/low but 2^14.288 = 20000 and 2^4.322 = 20
@@ -106,7 +111,7 @@ void PrismVoice::renderNextBlock (juce::AudioBuffer<float> &outputBuffer, int st
     detuneLinearValue += detuneRate/300;
     
     DBG("+++++++++++++");
-    DBG(pow(2, detuneLinearValue));
+    DBG(panLevel);
     DBG("+++++++++++++");
     
 }
@@ -139,4 +144,9 @@ void PrismVoice::setPitchSmoothDuration(double sr, float rate)
 void PrismVoice::setDetuneRate(float rate)
 {
     detuneRate = rate;
+}
+
+void PrismVoice::setSpreadLevel(float level)
+{
+    spreadLevel = level;
 }

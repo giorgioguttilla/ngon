@@ -33,7 +33,7 @@ params(*this, nullptr, "PARAMETERS", {
     
     std::make_unique<juce::AudioParameterFloat>("smoothing", "Smoothing", 0.0f, 1.0f, 0.1f),
     std::make_unique<juce::AudioParameterFloat>("detune", "Detune", -1.0f, 1.0f, 0.0f),
-    std::make_unique<juce::AudioParameterFloat>("spread", "Spread", 0.0f, 1.0f, 0.1f),
+    std::make_unique<juce::AudioParameterFloat>("spread", "Spread", -1.0f, 1.0f, 0.0f),
     
     std::make_unique<juce::AudioParameterFloat>("vibratoRate", "VibratoRate", 0.1f, 20.0f, 1.0f),
     std::make_unique<juce::AudioParameterFloat>("vibratoDepth", "VibratoDepth", 0.0f, 1.0f, 0.0f),
