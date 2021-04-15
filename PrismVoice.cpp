@@ -10,6 +10,10 @@
 
 #include "PrismVoice.h"
 #include <iostream>
+#include <math.h>
+#include <tgmath.h>
+
+
 
 PrismVoice::PrismVoice()
 {
@@ -29,8 +33,10 @@ bool PrismVoice::canPlaySound (juce::SynthesiserSound *sound)
 void PrismVoice::startNote (int midiNoteNumber, float velocity, juce::SynthesiserSound *sound, int currentPitchWheelPosition)
 {
     adsr.noteOn();
-//    outPitch = juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber);
     outPitch.setTargetValue(juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber));
+    
+    detuneLinearValue = log2(juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber));
+    
 }
 
 void PrismVoice::stopNote (float velocity, bool allowTailOff)
@@ -55,7 +61,8 @@ void PrismVoice::prepareToPlay(double sampleRate, int samplesPerBlock, int outpu
     //default constructed, mostly redundant
     adsr.setSampleRate(sampleRate);
     adsr.setParameters(adsrParams);
-        
+    
+    //only need 1 channel for tempbuf
     tempBuf.setSize(1, samplesPerBlock);
     tempBuf.clear();
     
@@ -68,9 +75,14 @@ void PrismVoice::prepareToPlay(double sampleRate, int samplesPerBlock, int outpu
 void PrismVoice::renderNextBlock (juce::AudioBuffer<float> &outputBuffer, int startSample, int numSamples)
 {
     
-    //gets ratio between pitch of raw and pitch of played note
-    float shift = PitchShift::getshiftRatio(inPitch, outPitch.getNextValue());
-
+    //detuneLinearValue is converted to exponential scale and difference is found between it and played note
+    float detuneDifference = pow(2, detuneLinearValue) - outPitch.getTargetValue();
+    
+    //gets ratio between pitch of raw and pitch of played note with detune difference added/subtracted
+    float adjOutPitch = outPitch.getNextValue() + detuneDifference;
+    
+    float shift = PitchShift::getshiftRatio(inPitch, adjOutPitch);
+    
     
     //copies in buffer to temp, does processing, and adds back to out buffer
     tempBuf.clear();
@@ -84,6 +96,18 @@ void PrismVoice::renderNextBlock (juce::AudioBuffer<float> &outputBuffer, int st
     //sends to each channel equally, might need to change later
     processBufferPtr->addFrom(0, startSample, tempBuf.getReadPointer(0), numSamples);
     processBufferPtr->addFrom(1, startSample, tempBuf.getReadPointer(0), numSamples);
+    
+    
+    //bounds on detune, totally unnecessary to be this high/low but 2^14.288 = 20000 and 2^4.322 = 20
+    if(detuneLinearValue > 14.288) detuneLinearValue = 14.288;
+    if(detuneLinearValue < 4.322) detuneLinearValue = 4.322;
+    
+    //linear value is moved by a fixed interval, 300 is a sweet spot
+    detuneLinearValue += detuneRate/300;
+    
+    DBG("+++++++++++++");
+    DBG(pow(2, detuneLinearValue));
+    DBG("+++++++++++++");
     
 }
 
@@ -110,4 +134,9 @@ void PrismVoice::setPitchSmoothDuration(double sr, float rate)
     outPitch.reset(sr, rate/100);
     
     outPitch.setTargetValue(tv);
+}
+
+void PrismVoice::setDetuneRate(float rate)
+{
+    detuneRate = rate;
 }

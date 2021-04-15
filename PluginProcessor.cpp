@@ -32,7 +32,7 @@ params(*this, nullptr, "PARAMETERS", {
     std::make_unique<juce::AudioParameterFloat>("release", "Release", 0.0f, 20.0f, 0.0f),
     
     std::make_unique<juce::AudioParameterFloat>("smoothing", "Smoothing", 0.0f, 1.0f, 0.1f),
-    std::make_unique<juce::AudioParameterFloat>("detune", "Detune", 0.0f, 1.0f, 0.1f),
+    std::make_unique<juce::AudioParameterFloat>("detune", "Detune", -1.0f, 1.0f, 0.0f),
     std::make_unique<juce::AudioParameterFloat>("spread", "Spread", 0.0f, 1.0f, 0.1f),
     
     std::make_unique<juce::AudioParameterFloat>("vibratoRate", "VibratoRate", 0.1f, 20.0f, 1.0f),
@@ -243,10 +243,10 @@ void PrismizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     }
 
     
-    DBG(std::to_string(*params.getRawParameterValue("smoothing")));
-    DBG(std::to_string(*params.getRawParameterValue("tremoloDepth")));
-    DBG(std::to_string(*params.getRawParameterValue("tremoloTrigger")));
-    DBG("---");
+//    DBG(std::to_string(*params.getRawParameterValue("smoothing")));
+//    DBG(std::to_string(*params.getRawParameterValue("tremoloDepth")));
+//    DBG(std::to_string(*params.getRawParameterValue("tremoloTrigger")));
+//    DBG("---");
 
 
     //SYNTH RENDERING
@@ -270,7 +270,6 @@ void PrismizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
 
     //This method triggers all voice process methods, which accumulate their output to the process buffer supplied in prepareToPlay
     synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
-
 
 
     //Gain from the sliders is applied to each respective channel

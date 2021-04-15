@@ -83,6 +83,7 @@ public:
     void setProcessBufferPtr(juce::AudioBuffer<float> *pbp);
     void setInPitch (float pitch);
     void setPitchSmoothDuration(double sr, float rate);
+    void setDetuneRate(float rate);
     
     juce::ADSR adsr;
     juce::ADSR::Parameters adsrParams;
@@ -98,6 +99,9 @@ private:
     
     float inPitch;
     juce::SmoothedValue<float, juce::ValueSmoothingTypes::Multiplicative> outPitch {440};
+    
+    float detuneLinearValue = 0.0;
+    float detuneRate = 0.0;
     
     long fftFrameSize = 1024;
     long os = 32;

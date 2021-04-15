@@ -120,6 +120,16 @@ void PrismizerAudioProcessorEditor::sliderValueChanged(juce::Slider *slider)
             }
         }
     }
+    
+    //handle detune updates
+    if(slider == &detune.slider)
+    {
+        for (int i = 0; i < audioProcessor.synth.getNumVoices(); ++i){
+            if (auto voice = dynamic_cast<PrismVoice*>(audioProcessor.synth.getVoice(i))){
+                voice->setDetuneRate(*audioProcessor.params.getRawParameterValue("detune"));
+            }
+        }
+    }
 }
 
 void PrismizerAudioProcessorEditor::buttonClicked(juce::Button *button)
@@ -154,12 +164,13 @@ void PrismizerAudioProcessorEditor::resized()
     // This is generally where you'll want to lay out the positions of any
     // subcomponents in your editor..
     // sets the position and size of the slider with arguments (x, y, width, height)
-    ADSR.setTopLeftPosition(400, 0);
-    smoothing.setTopLeftPosition(0, 200);
-    detune.setTopLeftPosition(100, 200);
-    spread.setTopLeftPosition(200, 200);
-    vibrato.setTopLeftPosition(100, 200);
-    tremolo.setTopLeftPosition(300, 200);
+    rawVolume.setTopLeftPosition(400, 0);
+    ADSR.setTopLeftPosition(400, 200);
+    smoothing.setTopLeftPosition(0, 0);
+    detune.setTopLeftPosition(100, 0);
+    spread.setTopLeftPosition(200, 0);
+    vibrato.setTopLeftPosition(0, 200);
+    tremolo.setTopLeftPosition(200, 200);
     wetVolume.setTopLeftPosition(rawVolume.getX() + rawVolume.getWidth(), 0);
     
 }
