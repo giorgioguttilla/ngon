@@ -127,8 +127,10 @@ void PrismizerAudioProcessorEditor::sliderValueChanged(juce::Slider *slider)
     //handle smoothing updates
     if(slider == &smoothing.slider)
     {
-        for (int i = 0; i < audioProcessor.synth.getNumVoices(); ++i){
-            if (auto voice = dynamic_cast<PrismVoice*>(audioProcessor.synth.getVoice(i))){
+        for (int i = 0; i < audioProcessor.synth.getNumVoices(); ++i)
+        {
+            if (auto voice = dynamic_cast<PrismVoice*>(audioProcessor.synth.getVoice(i)))
+            {
                 voice->setPitchSmoothDuration(audioProcessor.sr, *audioProcessor.params.getRawParameterValue("smoothing"));
             }
         }
@@ -137,8 +139,10 @@ void PrismizerAudioProcessorEditor::sliderValueChanged(juce::Slider *slider)
     //handle detune updates
     if(slider == &detune.slider)
     {
-        for (int i = 0; i < audioProcessor.synth.getNumVoices(); ++i){
-            if (auto voice = dynamic_cast<PrismVoice*>(audioProcessor.synth.getVoice(i))){
+        for (int i = 0; i < audioProcessor.synth.getNumVoices(); ++i)
+        {
+            if (auto voice = dynamic_cast<PrismVoice*>(audioProcessor.synth.getVoice(i)))
+            {
                 voice->setDetuneRate(*audioProcessor.params.getRawParameterValue("detune"));
             }
         }
@@ -147,17 +151,55 @@ void PrismizerAudioProcessorEditor::sliderValueChanged(juce::Slider *slider)
     //handle spread updates
     if(slider == &spread.slider)
     {
-        for (int i = 0; i < audioProcessor.synth.getNumVoices(); ++i){
-            if (auto voice = dynamic_cast<PrismVoice*>(audioProcessor.synth.getVoice(i))){
+        for (int i = 0; i < audioProcessor.synth.getNumVoices(); ++i)
+        {
+            if (auto voice = dynamic_cast<PrismVoice*>(audioProcessor.synth.getVoice(i)))
+            {
                 voice->setSpreadLevel(*audioProcessor.params.getRawParameterValue("spread"));
             }
         }
     }
+    
+    //handles filter updates
+    if(slider == &filterGroup.offset.slider)
+    {
+        for (int i = 0; i < audioProcessor.synth.getNumVoices(); ++i)
+        {
+            if (auto voice = dynamic_cast<PrismVoice*>(audioProcessor.synth.getVoice(i)))
+            {
+                voice->setFilterOffset(*audioProcessor.params.getRawParameterValue("filterOffset"));
+            }
+        }
+    }
+    
+    if(slider == &filterGroup.width.slider)
+    {
+        for (int i = 0; i < audioProcessor.synth.getNumVoices(); ++i)
+        {
+            if (auto voice = dynamic_cast<PrismVoice*>(audioProcessor.synth.getVoice(i)))
+            {
+                voice->setFilterWidth(*audioProcessor.params.getRawParameterValue("filterWidth"));
+            }
+        }
+    }
+    
 }
 
 void PrismizerAudioProcessorEditor::buttonClicked(juce::Button *button)
 {
-//    DBG(button->getToggleStateValue().toString());
+
+    //filter toggle updates
+    if(button == &filterGroup.toggleButton)
+    {
+        for (int i = 0; i < audioProcessor.synth.getNumVoices(); ++i)
+        {
+            if (auto voice = dynamic_cast<PrismVoice*>(audioProcessor.synth.getVoice(i)))
+            {
+                voice->setIsFilterActive(*audioProcessor.params.getRawParameterValue("filterToggle"));
+            }
+        }
+    }
+    
 }
 
 void PrismizerAudioProcessorEditor::mouseDown(const juce::MouseEvent &event)
@@ -179,6 +221,16 @@ void PrismizerAudioProcessorEditor::mouseDown(const juce::MouseEvent &event)
         }
         
         filterGroup.filterGraph.setFilterType((int)filterType.getValue());
+        
+        //update filter type in voices
+        for (int i = 0; i < audioProcessor.synth.getNumVoices(); ++i)
+        {
+            if (auto voice = dynamic_cast<PrismVoice*>(audioProcessor.synth.getVoice(i)))
+            {
+                voice->setFilterType((int)filterType.getValue());
+            }
+        }
+        
         
         DBG(filterType.getValue().toString());
     }

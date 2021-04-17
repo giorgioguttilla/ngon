@@ -70,6 +70,10 @@ void PrismVoice::prepareToPlay(double sampleRate, int samplesPerBlock, int outpu
     
     outPitch.reset(sampleRate, 0.0);
     
+    //TODO: fix filter initialization, this is placeholder
+    filter = std::make_unique<juce::IIRFilter>();
+    filter->setCoefficients(juce::IIRCoefficients::makeLowPass(sampleRate, outPitch.getCurrentValue(), 1.0));
+    
 }
 
 void PrismVoice::renderNextBlock (juce::AudioBuffer<float> &outputBuffer, int startSample, int numSamples)
@@ -110,10 +114,6 @@ void PrismVoice::renderNextBlock (juce::AudioBuffer<float> &outputBuffer, int st
     //linear value is moved by a fixed interval, 300 is a sweet spot
     detuneLinearValue += detuneRate/300;
     
-//    DBG("+++++++++++++");
-//    DBG(panLevel);
-//    DBG("+++++++++++++");
-    
 }
 
 
@@ -149,4 +149,39 @@ void PrismVoice::setDetuneRate(float rate)
 void PrismVoice::setSpreadLevel(float level)
 {
     spreadLevel = level;
+}
+
+void PrismVoice::setIsFilterActive(bool isActive)
+{
+    filterIsActive = isActive;
+}
+void PrismVoice::setFilterOffset(float offset)
+{
+    filterOffset = offset;
+}
+void PrismVoice::setFilterWidth(float width)
+{
+    filterWidth = width;
+}
+void PrismVoice::setFilterType(int type)
+{
+    filterType = type;
+}
+
+void PrismVoice::updateFilter()
+{
+    //TODO: filterOffset should work based on pitch
+    if(filterType == 0)
+    {
+        filter->setCoefficients(juce::IIRCoefficients::makeLowPass(getSampleRate(), filterOffset * 20000, filterWidth));
+    }
+    if(filterType == 1)
+    {
+        filter->setCoefficients(juce::IIRCoefficients::makeBandPass(getSampleRate(), filterOffset * 20000, filterWidth));
+    }
+    if(filterType == 2)
+    {
+        filter->setCoefficients(juce::IIRCoefficients::makeHighPass(getSampleRate(), filterOffset * 20000, filterWidth));
+    }
+    
 }

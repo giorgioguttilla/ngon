@@ -86,8 +86,16 @@ public:
     void setDetuneRate(float rate);
     void setSpreadLevel(float level);
     
+    void setIsFilterActive(bool isActive);
+    void setFilterOffset(float offset);
+    void setFilterWidth(float width);
+    void setFilterType(int type);
+    void updateFilter();
+    
     juce::ADSR adsr;
     juce::ADSR::Parameters adsrParams;
+    
+    std::unique_ptr<juce::IIRFilter> filter;
     
 private:
     
@@ -105,6 +113,11 @@ private:
     float detuneRate = 0.0;
     
     float spreadLevel = 0.0;
+    
+    bool filterIsActive = false;
+    float filterOffset = 0.0;
+    float filterWidth = 0.0;
+    int filterType = 0;
     
     long fftFrameSize = 1024;
     long os = 32;

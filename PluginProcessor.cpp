@@ -249,10 +249,10 @@ void PrismizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     }
 
     
-    DBG(std::to_string(*params.getRawParameterValue("filterOffset")));
-    DBG(std::to_string(*params.getRawParameterValue("filterWidth")));
-    DBG(std::to_string(*params.getRawParameterValue("filterToggle")));
-    DBG("---");
+//    DBG(std::to_string(*params.getRawParameterValue("filterOffset")));
+//    DBG(std::to_string(*params.getRawParameterValue("filterWidth")));
+//    DBG(std::to_string(*params.getRawParameterValue("filterToggle")));
+//    DBG("---");
 
 
     //SYNTH RENDERING
