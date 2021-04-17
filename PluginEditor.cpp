@@ -46,6 +46,10 @@ PrismizerAudioProcessorEditor::PrismizerAudioProcessorEditor (PrismizerAudioProc
     tremoloTriggerValue = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(audioProcessor.params, "tremoloTrigger", tremolo.triggerButton);
     
     
+    filterOffsetValue = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.params, "filterOffset", filterGroup.offset.slider);
+    filterWidthValue = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.params, "filterWidth", filterGroup.width.slider);
+    filterToggleValue = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(audioProcessor.params, "filterToggle", filterGroup.toggleButton);
+    
     
     rawVolumeValue = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.params, "rawVolume", rawVolume.slider);
     
@@ -89,6 +93,10 @@ PrismizerAudioProcessorEditor::PrismizerAudioProcessorEditor (PrismizerAudioProc
     tremolo.depthSlider.slider.addListener(this);
     tremolo.triggerButton.addListener(this);
     
+    filterGroup.offset.slider.addListener(this);
+    filterGroup.width.slider.addListener(this);
+    filterGroup.toggleButton.addListener(this);
+    
     rawVolume.slider.addListener(this);
     wetVolume.slider.addListener(this);
     
@@ -100,13 +108,13 @@ PrismizerAudioProcessorEditor::PrismizerAudioProcessorEditor (PrismizerAudioProc
     addAndMakeVisible(&spread);
     addAndMakeVisible(&vibrato);
     addAndMakeVisible(&tremolo);
-    addAndMakeVisible(&filterGraph);
+    addAndMakeVisible(&filterGroup);
     addAndMakeVisible(&rawVolume);
     addAndMakeVisible(&wetVolume);
     
     //-------------------------------------------------------
     
-    filterGraph.addMouseListener(this, true);
+    filterGroup.filterGraph.addMouseListener(this, true);
         
 }
 
@@ -156,7 +164,7 @@ void PrismizerAudioProcessorEditor::mouseDown(const juce::MouseEvent &event)
 {
     
     //sets filter type value state and updates UI accordingly
-    if(filterGraph.contains(event.getPosition()))
+    if(filterGroup.filterGraph.contains(event.getPosition()))
     {
         //TODO: adding undo in the future will not work here, replace NULL
         juce::Value filterType = audioProcessor.params.state.getPropertyAsValue("filterType", NULL);
@@ -170,7 +178,7 @@ void PrismizerAudioProcessorEditor::mouseDown(const juce::MouseEvent &event)
             filterType.setValue((int)filterType.getValue() + 1);
         }
         
-        filterGraph.setFilterType((int)filterType.getValue());
+        filterGroup.filterGraph.setFilterType((int)filterType.getValue());
         
         DBG(filterType.getValue().toString());
     }
@@ -210,11 +218,11 @@ void PrismizerAudioProcessorEditor::resized()
     spread.setTopLeftPosition(200, 0);
     vibrato.setTopLeftPosition(0, 200);
     tremolo.setTopLeftPosition(200, 200);
-    filterGraph.setTopLeftPosition(300, 200);
+    filterGroup.setTopLeftPosition(300, 200);
     wetVolume.setTopLeftPosition(rawVolume.getX() + rawVolume.getWidth(), 0);
     
     //TODO: Undo will not work here
-    filterGraph.setFilterType((int)audioProcessor.params.state.getPropertyAsValue("filterType", NULL).getValue());
+    filterGroup.filterGraph.setFilterType((int)audioProcessor.params.state.getPropertyAsValue("filterType", NULL).getValue());
 }
 
 

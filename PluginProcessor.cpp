@@ -43,6 +43,9 @@ params(*this, nullptr, "PARAMETERS", {
     std::make_unique<juce::AudioParameterFloat>("tremoloDepth", "TremoloDepth", 0.0f, 1.0f, 0.0f),
     std::make_unique<juce::AudioParameterBool>("tremoloTrigger", "TremoloTrigger", false),
     
+    std::make_unique<juce::AudioParameterFloat>("filterOffset", "FilterOffset", 0.0f, 1.0f, 0.5f),
+    std::make_unique<juce::AudioParameterFloat>("filterWidth", "FilterWidth", 0.0f, 1.0f, 0.5f),
+    std::make_unique<juce::AudioParameterBool>("filterToggle", "FilterToggle", false),
     std::make_unique<juce::AudioParameterInt>("filterType", "FilterType", 0, 2, 0),
      
     
@@ -246,10 +249,10 @@ void PrismizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     }
 
     
-//    DBG(std::to_string(*params.getRawParameterValue("smoothing")));
-//    DBG(std::to_string(*params.getRawParameterValue("tremoloDepth")));
-//    DBG(std::to_string(*params.getRawParameterValue("tremoloTrigger")));
-//    DBG("---");
+    DBG(std::to_string(*params.getRawParameterValue("filterOffset")));
+    DBG(std::to_string(*params.getRawParameterValue("filterWidth")));
+    DBG(std::to_string(*params.getRawParameterValue("filterToggle")));
+    DBG("---");
 
 
     //SYNTH RENDERING

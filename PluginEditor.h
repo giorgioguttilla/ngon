@@ -15,7 +15,7 @@
 #include "AdsrControls.h"
 #include "TunerKeyboard.h"
 #include "LFOGroup.h"
-#include "FilterGraph.h"
+#include "FilterGroup.h"
 
 //==============================================================================
 /**
@@ -58,7 +58,7 @@ private:
     LFOGroup vibrato;
     LFOGroup tremolo;
     
-    FilterGraph filterGraph;
+    FilterGroup filterGroup;
     
 private:
     //OUT
@@ -88,6 +88,10 @@ public:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> tremoloRateValue;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> tremoloDepthValue;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> tremoloTriggerValue;
+    
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> filterOffsetValue;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> filterWidthValue;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> filterToggleValue;
     
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> rawVolumeValue;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> wetVolumeValue;

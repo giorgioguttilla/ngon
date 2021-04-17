@@ -10,7 +10,8 @@
 
 #include "VolumeSlider.h"
 
-VolumeSlider::VolumeSlider(){
+VolumeSlider::VolumeSlider()
+{
     
     addAndMakeVisible(slider);
     addAndMakeVisible(label);
