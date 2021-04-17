@@ -42,7 +42,10 @@ params(*this, nullptr, "PARAMETERS", {
     std::make_unique<juce::AudioParameterFloat>("tremoloRate", "TremoloRate", 0.1f, 20.0f, 1.0f),
     std::make_unique<juce::AudioParameterFloat>("tremoloDepth", "TremoloDepth", 0.0f, 1.0f, 0.0f),
     std::make_unique<juce::AudioParameterBool>("tremoloTrigger", "TremoloTrigger", false),
-        
+    
+    std::make_unique<juce::AudioParameterInt>("filterType", "FilterType", 0, 2, 0),
+     
+    
     std::make_unique<juce::AudioParameterFloat>("rawVolume", "RawVolume", 0.0f, 1.0f, 1.0f),
     std::make_unique<juce::AudioParameterFloat>("wetVolume", "WetVolume", 0.0f, 1.0f, 1.0f)
     

@@ -100,8 +100,13 @@ PrismizerAudioProcessorEditor::PrismizerAudioProcessorEditor (PrismizerAudioProc
     addAndMakeVisible(&spread);
     addAndMakeVisible(&vibrato);
     addAndMakeVisible(&tremolo);
+    addAndMakeVisible(&filterGraph);
     addAndMakeVisible(&rawVolume);
     addAndMakeVisible(&wetVolume);
+    
+    //-------------------------------------------------------
+    
+    filterGraph.addMouseListener(this, true);
         
 }
 
@@ -147,6 +152,30 @@ void PrismizerAudioProcessorEditor::buttonClicked(juce::Button *button)
 //    DBG(button->getToggleStateValue().toString());
 }
 
+void PrismizerAudioProcessorEditor::mouseDown(const juce::MouseEvent &event)
+{
+    
+    //sets filter type value state and updates UI accordingly
+    if(filterGraph.contains(event.getPosition()))
+    {
+        //TODO: adding undo in the future will not work here, replace NULL
+        juce::Value filterType = audioProcessor.params.state.getPropertyAsValue("filterType", NULL);
+        
+        if(filterType.getValue().equals(2))
+        {
+            filterType.setValue(0);
+        }
+        else
+        {
+            filterType.setValue((int)filterType.getValue() + 1);
+        }
+        
+        filterGraph.setFilterType((int)filterType.getValue());
+        
+        DBG(filterType.getValue().toString());
+    }
+}
+
 //==============================================================================
 
 PrismizerAudioProcessorEditor::~PrismizerAudioProcessorEditor()
@@ -181,6 +210,13 @@ void PrismizerAudioProcessorEditor::resized()
     spread.setTopLeftPosition(200, 0);
     vibrato.setTopLeftPosition(0, 200);
     tremolo.setTopLeftPosition(200, 200);
+    filterGraph.setTopLeftPosition(300, 200);
     wetVolume.setTopLeftPosition(rawVolume.getX() + rawVolume.getWidth(), 0);
     
+    //TODO: Undo will not work here
+    filterGraph.setFilterType((int)audioProcessor.params.state.getPropertyAsValue("filterType", NULL).getValue());
 }
+
+
+
+

@@ -15,6 +15,7 @@
 #include "AdsrControls.h"
 #include "TunerKeyboard.h"
 #include "LFOGroup.h"
+#include "FilterGraph.h"
 
 //==============================================================================
 /**
@@ -29,10 +30,13 @@ public:
     PrismizerAudioProcessorEditor (PrismizerAudioProcessor&);
     ~PrismizerAudioProcessorEditor() override;
 
-    //==============================================================================
+    //==========================================================================
+    
     void timerCallback() override;
     void paint (juce::Graphics&) override;
     void resized() override;
+    
+    void mouseDown(const juce::MouseEvent &event) override;
 
 private:
     void sliderValueChanged(juce::Slider* slider) override;
@@ -53,6 +57,8 @@ private:
     //MODULATION
     LFOGroup vibrato;
     LFOGroup tremolo;
+    
+    FilterGraph filterGraph;
     
 private:
     //OUT

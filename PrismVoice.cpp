@@ -110,9 +110,9 @@ void PrismVoice::renderNextBlock (juce::AudioBuffer<float> &outputBuffer, int st
     //linear value is moved by a fixed interval, 300 is a sweet spot
     detuneLinearValue += detuneRate/300;
     
-    DBG("+++++++++++++");
-    DBG(panLevel);
-    DBG("+++++++++++++");
+//    DBG("+++++++++++++");
+//    DBG(panLevel);
+//    DBG("+++++++++++++");
     
 }
 
