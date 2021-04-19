@@ -178,11 +178,17 @@ void PrismVoice::setInPitch(float pitch)
 
 void PrismVoice::setPitchSmoothDuration(double sr, float rate)
 {
-    float tv = outPitch.getTargetValue();
+    if(abs(smoothRate - rate) > 0.001)
+    {
+        float tv = outPitch.getTargetValue();
+        
+        outPitch.reset(sr, rate/100);
+        
+        outPitch.setTargetValue(tv);
+        
+        smoothRate = rate;
+    }
     
-    outPitch.reset(sr, rate/100);
-    
-    outPitch.setTargetValue(tv);
 }
 
 //void PrismVoice::setDetuneRate(float rate)

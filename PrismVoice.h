@@ -110,6 +110,7 @@ private:
     std::unique_ptr<PitchShift> pShift;
     
     float inPitch;
+    float smoothRate = 0.0;
     juce::SmoothedValue<float, juce::ValueSmoothingTypes::Multiplicative> outPitch {440};
     
     float detuneLinearValue = 0.0;
