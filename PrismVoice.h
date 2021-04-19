@@ -116,7 +116,7 @@ private:
     
     bool filterIsActive = false;
     float filterOffset = 0.0;
-    float filterWidth = 0.0;
+    float filterWidth = 1.0;
     int filterType = 0;
     
     long fftFrameSize = 1024;

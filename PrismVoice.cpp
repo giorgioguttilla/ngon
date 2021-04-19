@@ -74,6 +74,9 @@ void PrismVoice::prepareToPlay(double sampleRate, int samplesPerBlock, int outpu
     filter = std::make_unique<juce::IIRFilter>();
     filter->setCoefficients(juce::IIRCoefficients::makeLowPass(sampleRate, outPitch.getCurrentValue(), 1.0));
     
+    //TODO: get rid of this, janky initialization and wrong for proper offset
+    filterOffset = inPitch;
+    
 }
 
 void PrismVoice::renderNextBlock (juce::AudioBuffer<float> &outputBuffer, int startSample, int numSamples)
@@ -101,6 +104,11 @@ void PrismVoice::renderNextBlock (juce::AudioBuffer<float> &outputBuffer, int st
     pShift->smbPitchShift(shift, numSamples, 1024, 32, (float*)tempBuf.getReadPointer(0), tempBuf.getWritePointer(0));
     
     adsr.applyEnvelopeToBuffer(tempBuf, startSample, numSamples);
+    
+    for (int i = 0; i < 5; i++)
+    {
+        DBG(filter->getCoefficients().coefficients[i]);
+    }
     
     //sends to each channel equally, might need to change later
     processBufferPtr->addFrom(0, startSample, tempBuf.getReadPointer(0), numSamples, 0.5 + panLevel);
@@ -158,30 +166,36 @@ void PrismVoice::setIsFilterActive(bool isActive)
 void PrismVoice::setFilterOffset(float offset)
 {
     filterOffset = offset;
+    updateFilter();
 }
 void PrismVoice::setFilterWidth(float width)
 {
     filterWidth = width;
+    updateFilter();
 }
 void PrismVoice::setFilterType(int type)
 {
     filterType = type;
+    updateFilter();
 }
 
 void PrismVoice::updateFilter()
 {
     //TODO: filterOffset should work based on pitch
+    float freq = pow(2, filterOffset * 14.3);
+    float q = pow(2, (1.0 - filterWidth) * 3.0);          //1-8
+    
     if(filterType == 0)
     {
-        filter->setCoefficients(juce::IIRCoefficients::makeLowPass(getSampleRate(), filterOffset * 20000, filterWidth));
+        filter->setCoefficients(juce::IIRCoefficients::makeLowPass(getSampleRate(), freq, q));
     }
     if(filterType == 1)
     {
-        filter->setCoefficients(juce::IIRCoefficients::makeBandPass(getSampleRate(), filterOffset * 20000, filterWidth));
+        filter->setCoefficients(juce::IIRCoefficients::makeBandPass(getSampleRate(), freq, q));
     }
     if(filterType == 2)
     {
-        filter->setCoefficients(juce::IIRCoefficients::makeHighPass(getSampleRate(), filterOffset * 20000, filterWidth));
+        filter->setCoefficients(juce::IIRCoefficients::makeHighPass(getSampleRate(), freq, q));
     }
     
 }
