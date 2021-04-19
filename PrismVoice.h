@@ -65,6 +65,7 @@
 #include "PitchShift.h"
 #include "FFTAccumulator.h"
 #include "PitchProcessor.h"
+#include "PluginProcessor.h"
 
 
 class PrismVoice : public juce::SynthesiserVoice {
@@ -77,20 +78,20 @@ public:
     void stopNote (float velocity, bool allowTailOff) override;
     void pitchWheelMoved (int newPitchWheelValue) override;
     void controllerMoved (int controllerNumber, int newControllerValue) override;
-    void prepareToPlay (double sampleRate, int samplesPerBlock, int outputChannels, juce::AudioBuffer<float> *pbp);
+    void prepareToPlay (double sampleRate, int samplesPerBlock, int outputChannels, juce::AudioBuffer<float> *pbp, PrismizerAudioProcessor *p);
     void renderNextBlock (juce::AudioBuffer<float> &outputBuffer, int startSample, int numSamples) override;
     juce::AudioBuffer<float> *getWriteBuffer();
     void setProcessBufferPtr(juce::AudioBuffer<float> *pbp);
     void setInPitch (float pitch);
     void setPitchSmoothDuration(double sr, float rate);
-    void setDetuneRate(float rate);
-    void setSpreadLevel(float level);
+//    void setDetuneRate(float rate);
+//    void setSpreadLevel(float level);
     
-    void setIsFilterActive(bool isActive);
-    void setFilterOffset(float offset);
-    void setFilterWidth(float width);
-    void setFilterType(int type);
-    void updateFilter();
+//    void setIsFilterActive(bool isActive);
+//    void setFilterOffset(float offset);
+//    void setFilterWidth(float width);
+//    void setFilterType(int type);
+    void updateFilter(float filterOffset, float filterWidth, int filterType);
     
     juce::ADSR adsr;
     juce::ADSR::Parameters adsrParams;
@@ -101,6 +102,8 @@ private:
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PrismVoice)
     
+    PrismizerAudioProcessor *processor;
+    
     juce::AudioBuffer<float> tempBuf;
     juce::AudioBuffer<float> *processBufferPtr;
     
@@ -110,14 +113,14 @@ private:
     juce::SmoothedValue<float, juce::ValueSmoothingTypes::Multiplicative> outPitch {440};
     
     float detuneLinearValue = 0.0;
-    float detuneRate = 0.0;
-    
-    float spreadLevel = 0.0;
-    
-    bool filterIsActive = false;
-    float filterOffset = 0.0;
-    float filterWidth = 1.0;
-    int filterType = 0;
+//    float detuneRate = 0.0;
+//
+//    float spreadLevel = 0.0;
+//    
+//    bool filterIsActive = false;
+//    float filterOffset = 0.0;
+//    float filterWidth = 1.0;
+//    int filterType = 0;
     
     long fftFrameSize = 1024;
     long os = 32;

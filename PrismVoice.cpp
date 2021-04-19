@@ -54,8 +54,10 @@ void PrismVoice::controllerMoved (int controllerNumber, int newControllerValue)
     
 }
 
-void PrismVoice::prepareToPlay(double sampleRate, int samplesPerBlock, int outputChannels, juce::AudioBuffer<float> *pbp)
+void PrismVoice::prepareToPlay(double sampleRate, int samplesPerBlock, int outputChannels, juce::AudioBuffer<float> *pbp, PrismizerAudioProcessor *p)
 {
+    processor = p;
+    
     pShift = std::make_unique<PitchShift>(sampleRate, 1024);
     
     //default constructed, mostly redundant
@@ -74,57 +76,91 @@ void PrismVoice::prepareToPlay(double sampleRate, int samplesPerBlock, int outpu
     filter = std::make_unique<juce::IIRFilter>();
     filter->setCoefficients(juce::IIRCoefficients::makeLowPass(sampleRate, outPitch.getCurrentValue(), 1.0));
     
-    //TODO: get rid of this, janky initialization and wrong for proper offset
-    filterOffset = inPitch;
-    
 }
 
 void PrismVoice::renderNextBlock (juce::AudioBuffer<float> &outputBuffer, int startSample, int numSamples)
 {
-    
-    //detuneLinearValue is converted to exponential scale and difference is found between it and played note
-    float detuneDifference = pow(2, detuneLinearValue) - outPitch.getTargetValue();
-    
-    //gets ratio between pitch of raw and pitch of played note with detune difference added/subtracted
-    float adjOutPitch = outPitch.getNextValue() + detuneDifference;
-    
-    //ratio between in and out pitch
-    float shift = PitchShift::getshiftRatio(inPitch, adjOutPitch);
-    
-    
-    //pan will be applied as gain to L, inverse to R
-    float panLevel = (spreadLevel * (log2(shift) / 2));
-    
-    
-    //copies in buffer to temp, does processing, and adds back to out buffer
-    tempBuf.clear();
-    
-    tempBuf.copyFrom(0, startSample, outputBuffer.getReadPointer(0), numSamples);
-
-    pShift->smbPitchShift(shift, numSamples, 1024, 32, (float*)tempBuf.getReadPointer(0), tempBuf.getWritePointer(0));
-    
-    adsr.applyEnvelopeToBuffer(tempBuf, startSample, numSamples);
-    
-    for (int i = 0; i < 5; i++)
+    if(processor != nullptr)
     {
-        DBG(filter->getCoefficients().coefficients[i]);
+        
+//        setPitchSmoothDuration(getSampleRate(), (float)*processor->params.getRawParameterValue("smoothing"));
+//
+//        setDetuneRate((float)*processor->params.getRawParameterValue("detune"));
+//
+//        setSpreadLevel((float)*processor->params.getRawParameterValue("spread"));
+//
+//        setFilterOffset((float)*processor->params.getRawParameterValue("filterOffset"));
+//
+//        setFilterWidth((float)*processor->params.getRawParameterValue("filterWidth"));
     }
     
-    //sends to each channel equally, might need to change later
-    processBufferPtr->addFrom(0, startSample, tempBuf.getReadPointer(0), numSamples, 0.5 + panLevel);
-    processBufferPtr->addFrom(1, startSample, tempBuf.getReadPointer(0), numSamples, 0.5 - panLevel);
+    if(processor != nullptr)
+    {
+        
+        setPitchSmoothDuration(getSampleRate(), (float)*processor->params.getRawParameterValue("smoothing"));
+        
+        float detuneRate = (float)*processor->params.getRawParameterValue("detune");
     
+        float spreadLevel = (float)*processor->params.getRawParameterValue("spread");
     
-    //bounds on detune, totally unnecessary to be this high/low but 2^14.288 = 20000 and 2^4.322 = 20
-    if(detuneLinearValue > 14.288) detuneLinearValue = 14.288;
-    if(detuneLinearValue < 4.322) detuneLinearValue = 4.322;
-    
-    //linear value is moved by a fixed interval, 300 is a sweet spot
-    detuneLinearValue += detuneRate/300;
-    
+        bool filterIsActive = (bool)*processor->params.getRawParameterValue("filterToggle");
+        
+        float filterOffset = (float)*processor->params.getRawParameterValue("filterOffset");
+        
+        float filterWidth = (float)*processor->params.getRawParameterValue("filterWidth");
+        
+        //TODO: for some reason getraw doesnt update when state is updated in plugineditor
+        int filterType = (int)processor->params.state.getProperty("filterType");
+//        int filterType = (int)*processor->params.getRawParameterValue("filterType");
+        
+        DBG(detuneRate);
+        DBG(spreadLevel);
+        DBG(std::to_string(filterIsActive));
+        DBG(filterOffset);
+        DBG(filterWidth);
+        DBG(filterType);
+        
+        //detuneLinearValue is converted to exponential scale and difference is found between it and played note
+        float detuneDifference = pow(2, detuneLinearValue) - outPitch.getTargetValue();
+        
+        //gets ratio between pitch of raw and pitch of played note with detune difference added/subtracted
+        float adjOutPitch = outPitch.getNextValue() + detuneDifference;
+        
+        //ratio between in and out pitch
+        float shift = PitchShift::getshiftRatio(inPitch, adjOutPitch);
+        
+        //pan will be applied as gain to L, inverse to R
+        float panLevel = (spreadLevel * (log2(shift) / 2));
+        
+        
+        //copies in buffer to temp, does processing, and adds back to out buffer
+        tempBuf.clear();
+        
+        tempBuf.copyFrom(0, startSample, outputBuffer.getReadPointer(0), numSamples);
+
+        pShift->smbPitchShift(shift, numSamples, 1024, 32, (float*)tempBuf.getReadPointer(0), tempBuf.getWritePointer(0));
+        
+        adsr.applyEnvelopeToBuffer(tempBuf, startSample, numSamples);
+        
+    //    for (int i = 0; i < 5; i++)
+    //    {
+    //        DBG(filter->getCoefficients().coefficients[i]);
+    //    }
+        
+        //sends to each channel equally, might need to change later
+        processBufferPtr->addFrom(0, startSample, tempBuf.getReadPointer(0), numSamples, 0.5 + panLevel);
+        processBufferPtr->addFrom(1, startSample, tempBuf.getReadPointer(0), numSamples, 0.5 - panLevel);
+        
+        
+        //bounds on detune, totally unnecessary to be this high/low but 2^14.288 = 20000 and 2^4.322 = 20
+        if(detuneLinearValue > 14.288) detuneLinearValue = 14.288;
+        if(detuneLinearValue < 4.322) detuneLinearValue = 4.322;
+        
+        //linear value is moved by a fixed interval, 300 is a sweet spot
+        detuneLinearValue += detuneRate/300;
+    }
+   
 }
-
-
 
 juce::AudioBuffer<float>* PrismVoice::getWriteBuffer()
 {
@@ -149,37 +185,37 @@ void PrismVoice::setPitchSmoothDuration(double sr, float rate)
     outPitch.setTargetValue(tv);
 }
 
-void PrismVoice::setDetuneRate(float rate)
-{
-    detuneRate = rate;
-}
+//void PrismVoice::setDetuneRate(float rate)
+//{
+//    detuneRate = rate;
+//}
+//
+//void PrismVoice::setSpreadLevel(float level)
+//{
+//    spreadLevel = level;
+//}
+//
+//void PrismVoice::setIsFilterActive(bool isActive)
+//{
+//    filterIsActive = isActive;
+//}
+//void PrismVoice::setFilterOffset(float offset)
+//{
+//    filterOffset = offset;
+//    updateFilter();
+//}
+//void PrismVoice::setFilterWidth(float width)
+//{
+//    filterWidth = width;
+//    updateFilter();
+//}
+//void PrismVoice::setFilterType(int type)
+//{
+//    filterType = type;
+//    updateFilter();
+//}
 
-void PrismVoice::setSpreadLevel(float level)
-{
-    spreadLevel = level;
-}
-
-void PrismVoice::setIsFilterActive(bool isActive)
-{
-    filterIsActive = isActive;
-}
-void PrismVoice::setFilterOffset(float offset)
-{
-    filterOffset = offset;
-    updateFilter();
-}
-void PrismVoice::setFilterWidth(float width)
-{
-    filterWidth = width;
-    updateFilter();
-}
-void PrismVoice::setFilterType(int type)
-{
-    filterType = type;
-    updateFilter();
-}
-
-void PrismVoice::updateFilter()
+void PrismVoice::updateFilter(float filterOffset, float filterWidth, int filterType)
 {
     //TODO: filterOffset should work based on pitch
     float freq = pow(2, filterOffset * 14.3);

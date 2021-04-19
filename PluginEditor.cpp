@@ -124,81 +124,81 @@ void PrismizerAudioProcessorEditor::sliderValueChanged(juce::Slider *slider)
 {
     audioProcessor.noteOnVel = rawVolume.slider.getValue(); //not sure what this is even doing
     
-    //handle smoothing updates
-    if(slider == &smoothing.slider)
-    {
-        for (int i = 0; i < audioProcessor.synth.getNumVoices(); ++i)
-        {
-            if (auto voice = dynamic_cast<PrismVoice*>(audioProcessor.synth.getVoice(i)))
-            {
-                voice->setPitchSmoothDuration(audioProcessor.sr, *audioProcessor.params.getRawParameterValue("smoothing"));
-            }
-        }
-    }
-    
-    //handle detune updates
-    if(slider == &detune.slider)
-    {
-        for (int i = 0; i < audioProcessor.synth.getNumVoices(); ++i)
-        {
-            if (auto voice = dynamic_cast<PrismVoice*>(audioProcessor.synth.getVoice(i)))
-            {
-                voice->setDetuneRate(*audioProcessor.params.getRawParameterValue("detune"));
-            }
-        }
-    }
-    
-    //handle spread updates
-    if(slider == &spread.slider)
-    {
-        for (int i = 0; i < audioProcessor.synth.getNumVoices(); ++i)
-        {
-            if (auto voice = dynamic_cast<PrismVoice*>(audioProcessor.synth.getVoice(i)))
-            {
-                voice->setSpreadLevel(*audioProcessor.params.getRawParameterValue("spread"));
-            }
-        }
-    }
-    
-    //handles filter updates
-    if(slider == &filterGroup.offset.slider)
-    {
-        for (int i = 0; i < audioProcessor.synth.getNumVoices(); ++i)
-        {
-            if (auto voice = dynamic_cast<PrismVoice*>(audioProcessor.synth.getVoice(i)))
-            {
-                voice->setFilterOffset(*audioProcessor.params.getRawParameterValue("filterOffset"));
-            }
-        }
-    }
-    
-    if(slider == &filterGroup.width.slider)
-    {
-        for (int i = 0; i < audioProcessor.synth.getNumVoices(); ++i)
-        {
-            if (auto voice = dynamic_cast<PrismVoice*>(audioProcessor.synth.getVoice(i)))
-            {
-                voice->setFilterWidth(*audioProcessor.params.getRawParameterValue("filterWidth"));
-            }
-        }
-    }
+//    //handle smoothing updates
+//    if(slider == &smoothing.slider)
+//    {
+//        for (int i = 0; i < audioProcessor.synth.getNumVoices(); ++i)
+//        {
+//            if (auto voice = dynamic_cast<PrismVoice*>(audioProcessor.synth.getVoice(i)))
+//            {
+//                voice->setPitchSmoothDuration(audioProcessor.sr, *audioProcessor.params.getRawParameterValue("smoothing"));
+//            }
+//        }
+//    }
+//
+//    //handle detune updates
+//    if(slider == &detune.slider)
+//    {
+//        for (int i = 0; i < audioProcessor.synth.getNumVoices(); ++i)
+//        {
+//            if (auto voice = dynamic_cast<PrismVoice*>(audioProcessor.synth.getVoice(i)))
+//            {
+//                voice->setDetuneRate(*audioProcessor.params.getRawParameterValue("detune"));
+//            }
+//        }
+//    }
+//
+//    //handle spread updates
+//    if(slider == &spread.slider)
+//    {
+//        for (int i = 0; i < audioProcessor.synth.getNumVoices(); ++i)
+//        {
+//            if (auto voice = dynamic_cast<PrismVoice*>(audioProcessor.synth.getVoice(i)))
+//            {
+//                voice->setSpreadLevel(*audioProcessor.params.getRawParameterValue("spread"));
+//            }
+//        }
+//    }
+//
+//    //handles filter updates
+//    if(slider == &filterGroup.offset.slider)
+//    {
+//        for (int i = 0; i < audioProcessor.synth.getNumVoices(); ++i)
+//        {
+//            if (auto voice = dynamic_cast<PrismVoice*>(audioProcessor.synth.getVoice(i)))
+//            {
+//                voice->setFilterOffset(*audioProcessor.params.getRawParameterValue("filterOffset"));
+//            }
+//        }
+//    }
+//
+//    if(slider == &filterGroup.width.slider)
+//    {
+//        for (int i = 0; i < audioProcessor.synth.getNumVoices(); ++i)
+//        {
+//            if (auto voice = dynamic_cast<PrismVoice*>(audioProcessor.synth.getVoice(i)))
+//            {
+//                voice->setFilterWidth(*audioProcessor.params.getRawParameterValue("filterWidth"));
+//            }
+//        }
+//    }
     
 }
 
 void PrismizerAudioProcessorEditor::buttonClicked(juce::Button *button)
 {
 
-    //filter toggle updates
-    if(button == &filterGroup.toggleButton)
-    {
-        for (int i = 0; i < audioProcessor.synth.getNumVoices(); ++i)
-        {
-            if (auto voice = dynamic_cast<PrismVoice*>(audioProcessor.synth.getVoice(i)))
-            {
-                voice->setIsFilterActive(*audioProcessor.params.getRawParameterValue("filterToggle"));
-            }
-        }
-    }
+//    //filter toggle updates
+//    if(button == &filterGroup.toggleButton)
+//    {
+//        for (int i = 0; i < audioProcessor.synth.getNumVoices(); ++i)
+//        {
+//            if (auto voice = dynamic_cast<PrismVoice*>(audioProcessor.synth.getVoice(i)))
+//            {
+//                voice->setIsFilterActive(*audioProcessor.params.getRawParameterValue("filterToggle"));
+//            }
+//        }
+//    }
     
 }
 
@@ -209,30 +209,38 @@ void PrismizerAudioProcessorEditor::mouseDown(const juce::MouseEvent &event)
     if(filterGroup.filterGraph.contains(event.getPosition()))
     {
         //TODO: adding undo in the future will not work here, replace NULL
-        juce::Value filterType = audioProcessor.params.state.getPropertyAsValue("filterType", NULL);
+        int prevFilterType = audioProcessor.params.state.getPropertyAsValue("filterType", NULL).getValue();
         
-        if(filterType.getValue().equals(2))
+        if(prevFilterType == 2)
         {
-            filterType.setValue(0);
+            prevFilterType = 0;
         }
         else
         {
-            filterType.setValue((int)filterType.getValue() + 1);
+            prevFilterType += 1;
         }
         
-        filterGroup.filterGraph.setFilterType((int)filterType.getValue());
+        //TODO: probably could just use reference to processor to get this without weird setters
+        filterGroup.filterGraph.setFilterType(prevFilterType);
         
-        //update filter type in voices
-        for (int i = 0; i < audioProcessor.synth.getNumVoices(); ++i)
-        {
-            if (auto voice = dynamic_cast<PrismVoice*>(audioProcessor.synth.getVoice(i)))
-            {
-                voice->setFilterType((int)filterType.getValue());
-            }
-        }
+//        //update filter type in voices
+//        for (int i = 0; i < audioProcessor.synth.getNumVoices(); ++i)
+//        {
+//            if (auto voice = dynamic_cast<PrismVoice*>(audioProcessor.synth.getVoice(i)))
+//            {
+//                voice->setFilterType((int)filterType.getValue());
+//            }
+//        }
+        //TODO: this is hot shite, what the fuck is wrong with this god damn class
+        audioProcessor.params.state.setProperty("filterType", prevFilterType, NULL);
+        audioProcessor.params.state.sendPropertyChangeMessage("filterType");
         
-        
-        DBG(filterType.getValue().toString());
+        audioProcessor.params.replaceState(audioProcessor.params.state);
+
+//        DBG(prevFilterType);
+//        DBG((int)audioProcessor.params.state.getProperty("filterType"));
+//        DBG(*audioProcessor.params.getRawParameterValue("filterType"));
+
     }
 }
 

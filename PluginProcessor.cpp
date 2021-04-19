@@ -161,7 +161,7 @@ void PrismizerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
         
         if(auto voice = dynamic_cast<PrismVoice*>(synth.getVoice(i)))
         {
-            voice->prepareToPlay(sampleRate, samplesPerBlock, getTotalNumOutputChannels(), &processBuffer);
+            voice->prepareToPlay(sampleRate, samplesPerBlock, getTotalNumOutputChannels(), &processBuffer, this);
         }
         
     }
